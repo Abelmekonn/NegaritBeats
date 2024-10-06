@@ -1,0 +1,50 @@
+Relationships Between Models
+User ↔ Artist: A user can be an artist if their role is set to 'artist'. Additional artist-specific information is stored in the Artist model, linked via userId.
+
+Artist ↔ Song/Album: An artist creates songs and albums. Songs reference the artist via the artist field. Albums also reference the artist.
+
+User ↔ Song: Users can like, dislike, and favorite songs. They can also comment on songs.
+
+User ↔ Album: Users can like and comment on albums.
+
+User ↔ Playlist: Users can create playlists containing songs.
+
+Song ↔ Album: Songs may belong to an album (optional for singles).
+
+User ↔ Subscription: Premium users have an active subscription.
+
+User ↔ Notification: Notifications are sent to users for various events (e.g., new song releases from followed artists).
+
+Song ↔ Genre: Songs are associated with genres for better categorization.
+
+User ↔ History: User listening history is tracked for personalized recommendations.
+
+Song ↔ SongAnalytics: Tracks analytics data for songs.
+
+
+
+==> Artist Uploads a Single Song:
+Creates a Song document with the artist field referencing the artist's Artist document.
+The song may or may not reference an Album.
+Artist Releases an Album:
+
+==> Creates an Album document.
+Creates multiple Song documents, each referencing the Album and the Artist.
+Updates the songs array in the Album document with the newly created song IDs.
+
+==> User Plays a Song:
+Adds an entry to the History model with the user and song references.
+Increments the playCount in the SongAnalytics model.
+
+==> User Likes a Song:
+Adds the song ID to the likedSongs array in the User model.
+Increments the likeCount in the SongAnalytics model.
+
+==> User Creates a Playlist:
+Creates a Playlist document with the user reference and an array of song IDs.
+
+==> Notifications:
+When an artist the user follows releases a new song or album, a Notification is created for that user.
+
+==> Premium Subscription:
+When a user subscribes to a premium plan, a Subscription document is created, and the user's isPremium field is set to true.

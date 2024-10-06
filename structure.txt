@@ -1,0 +1,27 @@
+/music-web-app/
+│
+├── /backend/                  # Backend code for the API
+│   ├── /config/                # Configuration files (database, cloud storage, etc.)
+│   ├── /controllers/           # Controllers (business logic)
+│   ├── /models/                # Database models (Mongoose schemas)
+│   ├── /routes/                # API routes
+│   ├── /middleware/            # Authentication and authorization middlewares
+│   ├── /uploads/               # For uploaded music and images (if not using Cloudinary)
+│   ├── server.js               # Express server setup
+│   ├── Dockerfile              # Dockerfile for backend
+│   ├── package.json            # Backend dependencies
+│
+├── /frontend/                  # Frontend code
+│   ├── /public/                # Public assets (images, favicons, etc.)
+│   ├── /src/                   # React source files
+│   ├── Dockerfile              # Dockerfile for frontend
+│   ├── package.json            # Frontend dependencies
+│
+├── /docker/                    # Docker-related files
+│   ├── docker-compose.yml      # Docker Compose to manage frontend and backend
+│   ├── .env.backend            # Backend-specific environment variables (for Docker)
+│   ├── .env.frontend           # Frontend-specific environment variables (for Docker)
+│   ├── db-init.sh              # Initialization script for MongoDB (if needed)
+│   └── nginx.conf              # NGINX configuration file (if using NGINX as reverse proxy)
+│
+└── .env                        # Main environment variables (DB_URL, Cloudinary keys, etc.)
