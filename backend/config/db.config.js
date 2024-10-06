@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 import { setTimeout } from 'timers/promises';
-require('dotenv').config();
+import dotenv from 'dotenv'; 
 
+dotenv.config(); 
 const dbUrl = process.env.MONGO_URI || "";
 
 const connectDb = async () => {

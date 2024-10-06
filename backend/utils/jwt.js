@@ -1,8 +1,7 @@
-require("dotenv").config();
-const { Response } = require("express");
-const { redis } = require("./redis");
-const User = require("../models/User.model"); // Assuming you have a user model in JS
+import dotenv from "dotenv";
+import { redis } from '../utils/redis.js'; 
 
+dotenv.config(); // Load environment variables
 
 // Options for cookies
 const accessTokenOptions = {
@@ -10,7 +9,7 @@ const accessTokenOptions = {
     maxAge: 15 * 60 * 1000, // 15 minutes
     httpOnly: true,
     sameSite: "lax",
-    secure: false, // Ensure this is false in non-HTTPS environments
+    secure: process.env.NODE_ENV === "production", // true in production, false otherwise
 };
 
 const refreshTokenOptions = {
@@ -18,7 +17,7 @@ const refreshTokenOptions = {
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     httpOnly: true,
     sameSite: "lax",
-    secure: false, // Ensure this is false in non-HTTPS environments
+    secure: process.env.NODE_ENV === "production", // true in production, false otherwise
 };
 
 const sendToken = (user, statusCode, res) => {
@@ -26,12 +25,18 @@ const sendToken = (user, statusCode, res) => {
     const refreshToken = user.SignRefreshToken();
 
     // Store user session in Redis
-    redis.set(user._id.toString(), JSON.stringify(user));
+    redis.set(user._id.toString(), JSON.stringify(user), (err) => {
+        if (err) {
+            console.error("Error storing session in Redis:", err);
+            // Optionally handle the error (e.g., respond with an error message)
+        }
+    });
 
     // Set cookies
     res.cookie("access_token", accessToken, accessTokenOptions);
     res.cookie("refresh_token", refreshToken, refreshTokenOptions);
 
+    // Respond with user data and tokens
     res.status(statusCode).json({
         success: true,
         user,
@@ -40,4 +45,5 @@ const sendToken = (user, statusCode, res) => {
     });
 };
 
-module.exports = { sendToken };
+// Export the sendToken function as a named export
+export { sendToken };
