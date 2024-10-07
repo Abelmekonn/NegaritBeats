@@ -22,6 +22,10 @@ const userSchema = new Schema({
         type: String,
         required: true,
     },
+    avatar: {
+        type: String,  // This will store the URL of the profile picture
+        default: 'default_avatar_url',  // You can set a default avatar URL if needed
+    },
     role: {
         type: String,
         enum: ['admin', 'artist', 'user'],

@@ -3,7 +3,7 @@ import userModel from '../models/user.model.js'; // Import your user model
 import CatchAsyncError from '../middleware/CatchAsyncError.js'; // Async error wrapper
 import sendMail from '../utils/sendMail.js'; // Utility for sending emails
 import { sendToken } from '../utils/jwt.js'; // Utility for sending JWT tokens
-
+import * as userService from '../services/user.service.js'; 
 // Register user
 export const registrationUser = CatchAsyncError(async (req, res, next) => {
     const { name, email, password } = req.body;
@@ -116,4 +116,40 @@ export const loginUser = CatchAsyncError(async (req, res, next) => {
 
     // Send token
     sendToken(user, 200, res);
+});
+
+
+// Get user profile controller
+export const getUserProfile = CatchAsyncError(async (req, res, next) => {
+    const userId = req.user.id; // Get user ID from the authenticated user (via JWT token)
+    
+    const userProfile = await userService.getUserProfile(userId);
+    
+    res.status(200).json({
+        success: true,
+        user: userProfile
+    });
+});
+
+
+// Update user profile controller
+export const updateUserProfile = CatchAsyncError(async (req, res, next) => {
+    const userId = req.user._id; // Get the authenticated user's ID
+
+    // Fields to update (from the request body)
+    const updateFields = {
+        username: req.body.username,
+        email: req.body.email,
+        // Add more fields as needed, such as password, profile picture, etc.
+    };
+
+    // Call the service to update the user profile
+    const updatedUser = await userService.updateUserProfileService(userId, updateFields);
+
+    // Respond with the updated user profile
+    res.status(200).json({
+        success: true,
+        message: 'Profile updated successfully',
+        user: updatedUser,
+    });
 });
