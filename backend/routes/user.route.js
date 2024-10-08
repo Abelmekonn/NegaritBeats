@@ -1,7 +1,6 @@
 import express from 'express';
-import { registrationUser, activateUser, loginUser,getUserProfile,updateUserProfile } from '../controllers/user.controller.js'; // Correct the path
-import { isAuthenticated } from '../middleware/auth.middleware.js'; // Middleware to verify authentication
-
+import { registrationUser, activateUser, loginUser,getUserProfile,updateProfile } from '../controllers/user.controller.js'; // Correct the path
+import { isAuthenticated } from '../middleware/auth.middleware.js';
 const userRouter = express.Router();
 
 // User registration route
@@ -17,7 +16,7 @@ userRouter.post('/login', loginUser);
 userRouter.get('/profile', isAuthenticated, getUserProfile);
 
 // Update profile (protected route)
-userRouter.put('/profile/update', isAuthenticated, updateUserProfile);
+userRouter.put('/profile/update', isAuthenticated, updateProfile);
 
 
 export default userRouter;

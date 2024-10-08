@@ -1,11 +1,10 @@
-const jwt = require("jsonwebtoken");
-const { CatchAsyncError } = require("./CatchAsyncError");
-const ErrorHandler = require("../utils/errorHandler");
-const { redis } = require("../utils/redis");
-const { updateAccessToken } = require("../controllers/user.controller");
+import jwt from "jsonwebtoken";
+import catchAsyncError from "./CatchAsyncError.js";
+import { redis } from "../utils/redis.js";
+import { updateAccessToken } from "../controllers/user.controller.js";
 
 // Authenticated user
-exports.isAuthenticated = CatchAsyncError(async (req, res, next) => {
+export const isAuthenticated = catchAsyncError(async (req, res, next) => {
     const accessToken = req.cookies.access_token;
     if (!accessToken) {
         return next(new ErrorHandler("Please login to access this resource", 401));
@@ -42,7 +41,7 @@ exports.isAuthenticated = CatchAsyncError(async (req, res, next) => {
 });
 
 // Validate user role
-exports.authorizeRoles = (...roles) => {
+export const authorizeRoles = (...roles) => {
     return (req, res, next) => {
         if (!roles.includes(req.user?.role || "")) {
             return next(new ErrorHandler(`Role: ${req.user?.role} is not allowed to access this resource`, 403));

@@ -1,11 +1,16 @@
 import jwt from 'jsonwebtoken';
 import userModel from '../models/user.model.js'; // Import your user model
-import CatchAsyncError from '../middleware/CatchAsyncError.js'; // Async error wrapper
+import catchAsyncError from '../middleware/CatchAsyncError.js'; // Async error wrapper
 import sendMail from '../utils/sendMail.js'; // Utility for sending emails
 import { sendToken } from '../utils/jwt.js'; // Utility for sending JWT tokens
 import * as userService from '../services/user.service.js'; 
+import cloudinary from 'cloudinary';
+import { redis } from '../utils/redis.js';
+import catchAsyncError from '../middleware/CatchAsyncError.js';
+
+
 // Register user
-export const registrationUser = CatchAsyncError(async (req, res, next) => {
+export const registrationUser = catchAsyncError(async (req, res, next) => {
     const { name, email, password } = req.body;
 
     // Check if the email already exists
@@ -56,7 +61,7 @@ const createActivationToken = (user) => {
 };
 
 // Activate user
-export const activateUser = CatchAsyncError(async (req, res, next) => {
+export const activateUser = catchAsyncError(async (req, res, next) => {
     const { activation_token, activation_code } = req.body;
 
     if (!activation_token) {
@@ -93,8 +98,9 @@ export const activateUser = CatchAsyncError(async (req, res, next) => {
     });
 });
 
+
 // Login user
-export const loginUser = CatchAsyncError(async (req, res, next) => {
+export const loginUser = catchAsyncError(async (req, res, next) => {
     const { email, password } = req.body;
 
     // Validate user input
@@ -118,9 +124,61 @@ export const loginUser = CatchAsyncError(async (req, res, next) => {
     sendToken(user, 200, res);
 });
 
+export const updateAccessToken = catchAsyncError(async (req, res, next) => {
+    const refreshToken = req.cookies.refresh_token;
+
+    if (!refreshToken) {
+        return res.status(401).json({
+            success: false,
+            message: "Refresh token is missing",
+        });
+    }
+
+    let decoded;
+    try {
+        decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN);
+    } catch (error) {
+        return res.status(401).json({
+            success: false,
+            message: "Invalid refresh token",
+        });
+    }
+
+    const session = await redis.get(decoded.id);
+    if (!session) {
+        return res.status(401).json({
+            success: false,
+            message: "Session expired. Please login again.",
+        });
+    }
+
+    const user = JSON.parse(session);
+
+    const accessToken = jwt.sign(
+        { id: user._id },
+        process.env.ACCESS_TOKEN,
+        { expiresIn: 15 * 60 * 1000 } // 15 minutes
+    );
+
+    const newRefreshToken = jwt.sign(
+        { id: user._id },
+        process.env.REFRESH_TOKEN,
+        { expiresIn: 7 * 24 * 60 * 60 * 1000 } // 7 days
+    );
+
+    req.user = user;
+
+    // Set new tokens
+    res.cookie("access_token", accessToken, { httpOnly: true, sameSite: 'strict', maxAge: 3600000 }); // 1 hour
+    res.cookie("refresh_token", newRefreshToken, { httpOnly: true, sameSite: 'strict', maxAge: 604800000 }); // 7 days
+
+    await redis.set(user._id, JSON.stringify(user), "EX", 604800); // 7 days expiration
+
+    next();
+});
 
 // Get user profile controller
-export const getUserProfile = CatchAsyncError(async (req, res, next) => {
+export const getUserProfile = catchAsyncError(async (req, res, next) => {
     const userId = req.user.id; // Get user ID from the authenticated user (via JWT token)
     
     const userProfile = await userService.getUserProfile(userId);
@@ -132,24 +190,208 @@ export const getUserProfile = CatchAsyncError(async (req, res, next) => {
 });
 
 
-// Update user profile controller
-export const updateUserProfile = CatchAsyncError(async (req, res, next) => {
-    const userId = req.user._id; // Get the authenticated user's ID
+// update user profile like password,name,avatar
+export const updateProfile = catchAsyncError(async (req, res, next) => {
+    try {
+        const userId = req.user?._id ;
+        const { name, password, avatar } = req.body; // Destructure name, password, and avatar
 
-    // Fields to update (from the request body)
-    const updateFields = {
-        username: req.body.username,
-        email: req.body.email,
-        // Add more fields as needed, such as password, profile picture, etc.
-    };
+        // Find the user by ID
+        const user = await userModel.findById(userId);
+        if (!user) {
+            return next(new ErrorHandler("User not found", 404));
+        }
 
-    // Call the service to update the user profile
-    const updatedUser = await userService.updateUserProfileService(userId, updateFields);
+        // Update name if provided
+        if (name) {
+            user.name = name;
+        }
 
-    // Respond with the updated user profile
+        // Update password if provided (assuming it's already hashed properly elsewhere)
+        if (password) {
+            user.password = password;
+        }
+
+        // Update avatar if provided
+        if (avatar) {
+            if (user?.avatar?.public_id) {
+                // Destroy the old avatar from Cloudinary
+                await cloudinary.v2.uploader.destroy(user.avatar.public_id);
+            }
+
+            // Upload new avatar to Cloudinary
+            const myCloud = await cloudinary.v2.uploader.upload(avatar, {
+                folder: "avatars",
+                width: 150,
+                crop: "scale"
+            });
+
+            // Update the user's avatar in the database
+            user.avatar = {
+                public_id: myCloud.public_id,
+                url: myCloud.secure_url
+            };
+        }
+
+        // Save the updated user info to the database
+        await user.save();
+
+        // Optionally update the Redis cache with the new user data
+        await redis.set(userId, JSON.stringify(user));
+
+        // Send the response
+        res.status(200).json({
+            success: true,
+            user
+        });
+    } catch (error) {
+        return res.status(400).json({ success: false, message: error.message });
+    }
+})
+
+// follow / un followArtist
+export const getAllFollowedArtists = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const followingArtists = await userService.getFollowedArtists(userId);
+
+        res.status(200).json({
+            success: true,
+            followingArtists,
+        });
+    } catch (error) {
+        res.status(404).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
+export const followArtist = async (req, res) => {
+    const userId = req.user._id;
+    const { artistId } = req.body;
+
+    const user = await userModel.findById(userId);
+    if (!user.followingArtists.includes(artistId)) {
+        user.followingArtists.push(artistId);
+        await user.save();
+    }
+
     res.status(200).json({
         success: true,
-        message: 'Profile updated successfully',
-        user: updatedUser,
+        message: "Artist followed successfully",
+        user,
     });
-});
+};
+
+export const unfollowArtist = async (req, res) => {
+    const userId = req.user._id;
+    const { artistId } = req.body;
+
+    const user = await userModel.findById(userId);
+    user.followingArtists = user.followingArtists.filter(
+        (id) => id.toString() !== artistId
+    );
+
+    await user.save();
+    
+    res.status(200).json({
+        success: true,
+        message: "Artist unfollowed successfully",
+        user,
+    });
+};
+
+// Like/Dislike Songs
+export const likeSong = async (req, res) => {
+    const userId = req.user._id;
+    const { songId } = req.body;
+
+    const user = await userModel.findById(userId);
+    if (!user.likedSongs.includes(songId)) {
+        user.likedSongs.push(songId);
+        user.dislikedSongs = user.dislikedSongs.filter(
+            (id) => id.toString() !== songId
+        ); // Remove from disliked if it was there
+        await user.save();
+    }
+
+    res.status(200).json({
+        success: true,
+        message: "Song liked successfully",
+        user,
+    });
+};
+
+export const dislikeSong = async (req, res) => {
+    const userId = req.user._id;
+    const { songId } = req.body;
+
+    const user = await userModel.findById(userId);
+    if (!user.dislikedSongs.includes(songId)) {
+        user.dislikedSongs.push(songId);
+        user.likedSongs = user.likedSongs.filter(
+            (id) => id.toString() !== songId
+        ); // Remove from liked if it was there
+        await user.save();
+    }
+
+    res.status(200).json({
+        success: true,
+        message: "Song disliked successfully",
+        user,
+    });
+};
+
+// Add/Remove Favorite Songs
+export const getAllFavoriteSongs = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const favoriteSongs = await userService.getFavoriteSongs(userId);
+
+        res.status(200).json({
+            success: true,
+            favoriteSongs,
+        });
+    } catch (error) {
+        res.status(404).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
+export const addFavoriteSong = async (req, res) => {
+    const userId = req.user._id;
+    const { songId } = req.body;
+
+    const user = await userModel.findById(userId);
+    if (!user.favoriteSongs.includes(songId)) {
+        user.favoriteSongs.push(songId);
+        await user.save();
+    }
+
+    res.status(200).json({
+        success: true,
+        message: "Song added to favorites",
+        user,
+    });
+};
+
+export const removeFavoriteSong = async (req, res) => {
+    const userId = req.user._id;
+    const { songId } = req.body;
+
+    const user = await userModel.findById(userId);
+    user.favoriteSongs = user.favoriteSongs.filter(
+        (id) => id.toString() !== songId
+    );
+
+    await user.save();
+
+    res.status(200).json({
+        success: true,
+        message: "Song removed from favorites",
+        user,
+    });
+};
