@@ -1,4 +1,4 @@
-import userModel from '../models/user.model.js'; // Import your user model
+import userModel from '../models/User.model.js'; // Import your user model
 import * as userService from '../services/user.service.js'; 
 
 // Manage Playlists

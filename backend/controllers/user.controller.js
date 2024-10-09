@@ -1,17 +1,16 @@
 import jwt from 'jsonwebtoken';
-import userModel from '../models/user.model.js'; // Import your user model
+import userModel from '../models/User.model.js'; // Import your user model
 import catchAsyncError from '../middleware/CatchAsyncError.js'; // Async error wrapper
 import sendMail from '../utils/sendMail.js'; // Utility for sending emails
 import { sendToken } from '../utils/jwt.js'; // Utility for sending JWT tokens
 import * as userService from '../services/user.service.js'; 
 import cloudinary from 'cloudinary';
 import { redis } from '../utils/redis.js';
-import catchAsyncError from '../middleware/CatchAsyncError.js';
 
 
 // Register user
 export const registrationUser = catchAsyncError(async (req, res, next) => {
-    const { name, email, password } = req.body;
+    const { name, email, password, role  } = req.body; // Default role
 
     // Check if the email already exists
     const isEmailExist = await userModel.findOne({ email });
@@ -19,8 +18,8 @@ export const registrationUser = catchAsyncError(async (req, res, next) => {
         return res.status(400).json({ success: false, message: "Email already exists" });
     }
 
-    // User object without types
-    const user = { name, email, password };
+    // User object including role
+    const user = { name, email, password, role };
 
     // Create activation token
     const activationToken = createActivationToken(user);
@@ -81,7 +80,7 @@ export const activateUser = catchAsyncError(async (req, res, next) => {
         return res.status(400).json({ success: false, message: "Invalid activation code" });
     }
 
-    const { name, email, password } = newUser.user;
+    const { name, email, password, role } = newUser.user; // Include role
 
     // Check if the user already exists
     const existUser = await userModel.findOne({ email });
@@ -89,8 +88,8 @@ export const activateUser = catchAsyncError(async (req, res, next) => {
         return res.status(400).json({ success: false, message: "Email already exists" });
     }
 
-    // Create new user
-    await userModel.create({ name, email, password });
+    // Create new user with role
+    await userModel.create({ name, email, password, role });
 
     res.status(201).json({
         success: true,

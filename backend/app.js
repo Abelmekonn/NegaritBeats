@@ -3,6 +3,8 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import ErrorHandler from './utils/errorHandler.js'; // Custom error handler
 import userRouter from './routes/user.route.js'; // Import your user routes
+import artistRouter from './routes/artis.route.js';
+import adminRoute from './routes/admin.route.js';
 
 const app = express();
 
@@ -17,6 +19,10 @@ app.use(cors({
 
 // Routes
 app.use('/api/users', userRouter); // User-related routes
+
+app.use('/api/artist',artistRouter) //  Artist-related routes
+
+app.use('/api/admin',adminRoute)
 
 // Error handling middleware
 app.use(ErrorHandler); // Handle errors

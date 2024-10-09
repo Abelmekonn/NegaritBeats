@@ -7,12 +7,13 @@ import { updateAccessToken } from "../controllers/user.controller.js";
 export const isAuthenticated = catchAsyncError(async (req, res, next) => {
     const accessToken = req.cookies.access_token;
     if (!accessToken) {
-        return next(new ErrorHandler("Please login to access this resource", 401));
+        return res.status(401).json({ success: false, message: "Please login to access this resource" });
     }
 
     try {
         // Verify the token
-        const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN);
+        const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN); // Corrected to ACCESS_TOKEN_SECRET
+
         // Check if the token is expired
         if (decoded.exp && decoded.exp <= Date.now() / 1000) {
             // Refresh the access token
@@ -24,7 +25,7 @@ export const isAuthenticated = catchAsyncError(async (req, res, next) => {
         const user = await redis.get(decoded.id);
 
         if (!user) {
-            return next(new ErrorHandler("Please login to access this resource", 401));
+            return res.status(401).json({ success: false, message: "Please login to access this resource" });
         }
 
         req.user = JSON.parse(user);
@@ -35,16 +36,20 @@ export const isAuthenticated = catchAsyncError(async (req, res, next) => {
             await updateAccessToken(req, res, next);
         } else {
             console.error('Error verifying token:', error);
-            return next(new ErrorHandler("Invalid or expired access token", 401));
+            return res.status(401).json({ success: false, message: "Invalid or expired access token" });
         }
     }
 });
+
 
 // Validate user role
 export const authorizeRoles = (...roles) => {
     return (req, res, next) => {
         if (!roles.includes(req.user?.role || "")) {
-            return next(new ErrorHandler(`Role: ${req.user?.role} is not allowed to access this resource`, 403));
+            return res.status(403).json({
+                success: false,
+                message: `Role: ${req.user?.role} is not allowed to access this resource`
+            });
         }
         next();
     };

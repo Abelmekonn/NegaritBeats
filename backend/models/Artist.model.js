@@ -1,5 +1,4 @@
-// models/Artist.js
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 const { Schema } = mongoose;
 
 const artistSchema = new Schema({
@@ -19,7 +18,6 @@ const artistSchema = new Schema({
         youtube: String,
         facebook: String,
     },
-    image: String, // URL to artist's image (e.g., from Cloudinary)
     followers: [{
         type: Schema.Types.ObjectId,
         ref: 'User',
@@ -42,4 +40,5 @@ const artistSchema = new Schema({
     },
 });
 
-module.exports = mongoose.model('Artist', artistSchema);
+// Export the model using ES Module syntax
+export default mongoose.model('Artist', artistSchema);
