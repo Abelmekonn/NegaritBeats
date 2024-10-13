@@ -12,9 +12,14 @@ const storage = multer.diskStorage({
 });
 
 // Initialize Multer with the storage configuration
-const upload = multer({
+const uploadSingle = multer({
+    storage,
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB file size limit per file
+}).single('song'); // Accept a single song
+
+const uploadMultiple = multer({
     storage,
     limits: { fileSize: 10 * 1024 * 1024 }, // 10MB file size limit per file
 }).array('songs', 10); // Accept up to 10 songs
 
-export default upload;
+export { uploadSingle, uploadMultiple };

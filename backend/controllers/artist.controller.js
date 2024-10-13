@@ -100,9 +100,17 @@ export const updateAlbum = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Album not found' });
         }
 
-        // Check if the current user is the owner (artist) of the album
-        if (album.artist.toString() !== artistId) {
-            return res.status(403).json({ success: false, message: 'You are not authorized to update this album' });
+        /// Fetch the artist associated with the album
+        const artist = await ArtistModel.findById(album.artist);
+
+        if (!artist) {
+            return res.status(404).json({ success: false, message: "Artist not found" });
+        }
+
+        console.log("user id" , req.user._id)
+        console.log("artist id" , artist.userId)
+        if (req.user._id.toString() !== artist.userId.toString()) {
+            return res.status(403).json({ success: false, message: "You are not authorized to update this album" });
         }
 
         // Update album details
