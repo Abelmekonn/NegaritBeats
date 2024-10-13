@@ -189,10 +189,9 @@ export const getUserProfile = catchAsyncError(async (req, res, next) => {
 });
 
 
-// update user profile like password,name,avatar
 export const updateProfile = catchAsyncError(async (req, res, next) => {
     try {
-        const userId = req.user?._id ;
+        const userId = req.user?._id;
         const { name, password, avatar } = req.body; // Destructure name, password, and avatar
 
         // Find the user by ID
@@ -206,14 +205,14 @@ export const updateProfile = catchAsyncError(async (req, res, next) => {
             user.name = name;
         }
 
-        // Update password if provided (assuming it's already hashed properly elsewhere)
+        // Update password if provided
         if (password) {
-            user.password = password;
+            user.password = password; // Ensure this is hashed before saving
         }
 
         // Update avatar if provided
         if (avatar) {
-            if (user?.avatar?.public_id) {
+            if (user.avatar?.public_id) {
                 // Destroy the old avatar from Cloudinary
                 await cloudinary.v2.uploader.destroy(user.avatar.public_id);
             }
@@ -235,7 +234,7 @@ export const updateProfile = catchAsyncError(async (req, res, next) => {
         // Save the updated user info to the database
         await user.save();
 
-        // Optionally update the Redis cache with the new user data
+        // Update the Redis cache with the new user data
         await redis.set(userId, JSON.stringify(user));
 
         // Send the response
@@ -246,7 +245,8 @@ export const updateProfile = catchAsyncError(async (req, res, next) => {
     } catch (error) {
         return res.status(400).json({ success: false, message: error.message });
     }
-})
+});
+
 
 // follow / un followArtist
 export const getAllFollowedArtists = async (req, res) => {

@@ -1,15 +1,12 @@
-import jwt from 'jsonwebtoken';
 import userModel from '../models/User.model.js'; // Import your user model
 import ArtistModel from '../models/Artist.model.js';
-import sendMail from '../utils/sendMail.js'; // Utility for sending emails
-import { sendToken } from '../utils/jwt.js'; // Utility for sending JWT tokens
-import * as userService from '../services/user.service.js'; 
 import cloudinary from 'cloudinary';
-import { redis } from '../utils/redis.js';
 import { createArtistProfile } from '../services/artist.service.js';
+import Song from '../models/Song.model.js';
+import Album from '../models/Album.model.js';
 
 // Create Artist Profile Controller
-export const createArtistProfileController = async (req, res, next) => {
+export const createArtistProfileController = async (req, res) => {
     try {
         const userId = req.user._id; // Assume userId comes from authenticated request
         const { bio, genres, socialLinks } = req.body; // Removed avatar from here
@@ -51,5 +48,151 @@ export const createArtistProfileController = async (req, res, next) => {
             success: false,
             message: error.message,
         });
+    }
+};
+
+// Update Song
+export const updateSong = async (req, res) => {
+    try {
+        const { songId } = req.params;
+        const { title, genre, artistId, albumId } = req.body;
+
+        // Find the song
+        const song = await Song.findById(songId);
+
+        if (!song) {
+            return res.status(404).json({ success: false, message: 'Song not found' });
+        }
+
+        // Check if the current user is the owner (artist) of the song
+        if (song.artist.toString() !== artistId) {
+            return res.status(403).json({ success: false, message: 'You are not authorized to update this song' });
+        }
+
+        // Update song details
+        song.title = title || song.title;
+        song.genre = genre || song.genre;
+        song.album = albumId || song.album;
+
+        // Save updated song
+        const updatedSong = await song.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Song updated successfully',
+            song: updatedSong,
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: `Song update failed: ${error.message}` });
+    }
+};
+
+// Update Album
+export const updateAlbum = async (req, res) => {
+    try {
+        const { albumId } = req.params;
+        const { title, genre, artistId } = req.body;
+
+        // Find the album
+        const album = await Album.findById(albumId);
+
+        if (!album) {
+            return res.status(404).json({ success: false, message: 'Album not found' });
+        }
+
+        // Check if the current user is the owner (artist) of the album
+        if (album.artist.toString() !== artistId) {
+            return res.status(403).json({ success: false, message: 'You are not authorized to update this album' });
+        }
+
+        // Update album details
+        album.title = title || album.title;
+        album.genre = genre || album.genre;
+
+        // Save updated album
+        const updatedAlbum = await album.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Album updated successfully',
+            album: updatedAlbum,
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: `Album update failed: ${error.message}` });
+    }
+};
+
+// Delete Song
+export const deleteSong = async (req, res) => {
+    try {
+        const { songId } = req.params;
+        const artistId = req.user._id; // Assuming you have user ID from the authentication middleware
+
+        // Find the song
+        const song = await Song.findById(songId);
+
+        if (!song) {
+            return res.status(404).json({ success: false, message: 'Song not found' });
+        }
+
+        // Check if the current user is the owner (artist) of the song
+        if (song.artist.toString() !== artistId.toString()) {
+            return res.status(403).json({ success: false, message: 'You are not authorized to delete this song' });
+        }
+
+        // Delete the song from Cloudinary
+        const publicId = song.songUrl.split('/').pop().split('.')[0];
+        await cloudinary.v2.uploader.destroy(publicId, { resource_type: 'video' });
+
+        // Delete the song from the database
+        await song.remove();
+
+        res.status(200).json({ success: true, message: 'Song deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: `Song deletion failed: ${error.message}` });
+    }
+};
+
+// Delete Album
+export const deleteAlbum = async (req, res) => {
+    try {
+        const { albumId } = req.params;
+        const artistId = req.user._id;
+
+        // Find the album
+        const album = await Album.findById(albumId);
+
+        if (!album) {
+            return res.status(404).json({ success: false, message: 'Album not found' });
+        }
+
+        // Check if the current user is the owner (artist) of the album
+        if (album.artist.toString() !== artistId.toString()) {
+            return res.status(403).json({ success: false, message: 'You are not authorized to delete this album' });
+        }
+
+        // Delete each song in the album
+        const songDeletePromises = album.songs.map(async (songId) => {
+            const song = await Song.findById(songId);
+
+            if (song) { // Check if song exists
+                // Delete the song from Cloudinary
+                const publicId = song.songUrl.split('/').pop().split('.')[0];
+                await cloudinary.v2.uploader.destroy(publicId, { resource_type: 'video' });
+
+                // Delete the song from the database
+                await song.remove();
+            }
+        });
+
+        // Wait for all songs to be deleted
+        await Promise.all(songDeletePromises);
+
+        // Delete the album itself
+        await album.remove();
+
+        res.status(200).json({ success: true, message: 'Album deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: `Album deletion failed: ${error.message}` });
     }
 };

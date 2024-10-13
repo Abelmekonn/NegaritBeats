@@ -27,4 +27,6 @@ const songAnalyticsSchema = new Schema({
     },
 });
 
-module.exports = mongoose.model('SongAnalytics', songAnalyticsSchema);
+const songAnalytics = mongoose.model('SongAnalytics', songAnalyticsSchema);
+
+export default songAnalytics

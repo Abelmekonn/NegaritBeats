@@ -42,3 +42,5 @@ const artistSchema = new Schema({
 
 // Export the model using ES Module syntax
 export default mongoose.model('Artist', artistSchema);
+
+

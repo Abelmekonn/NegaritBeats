@@ -23,8 +23,14 @@ const userSchema = new Schema({
         required: true,
     },
     avatar: {
-        type: String,  // This will store the URL of the profile picture
-        default: 'default_avatar_url',  // You can set a default avatar URL if needed
+        public_id: {
+            type: String,
+            required: true,
+        },
+        url: {
+            type: String,
+            required: true,
+        }, // This will store the URL of the profile picture
     },
     role: {
         type: String,
@@ -105,6 +111,6 @@ userSchema.methods.comparePassword = async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
 
-const User = mongoose.models.User || mongoose.model('User', userSchema);
+const UserModel = mongoose.models.User || mongoose.model('User', userSchema);
 
-export default User; // Export the User model
+export default UserModel; // Export the User model
