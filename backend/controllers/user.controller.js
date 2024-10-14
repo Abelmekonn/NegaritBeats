@@ -394,3 +394,39 @@ export const removeFavoriteSong = async (req, res) => {
         user,
     });
 };
+
+
+export const fetchAllArtists = async (req, res) => {
+    try {
+        const artists = await userService.fetchArtistsWithCache();
+        return res.status(200).json({
+            success: true,
+            data: artists,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
+
+export const getArtistById = async (req, res) => {
+    const { artistId } = req.params; // Get the artistId from URL params
+
+    try {
+        const artist = await userService.getSingleArtistWithCache(artistId); // Fetch artist with caching
+
+        res.status(200).json({
+            success: true,
+            message: "Artist fetched successfully",
+            artist, // Send back the artist's detailed information
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};

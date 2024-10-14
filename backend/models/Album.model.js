@@ -26,6 +26,10 @@ const albumSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Song',
     }],
+    comments: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Comment',
+    }],
     releaseDate: {
         type: Date,
         default: Date.now,
@@ -36,6 +40,6 @@ const albumSchema = new Schema({
     },
 });
 
-const  Album =mongoose.models.Album ||mongoose.model('Album', albumSchema);
+const Album = mongoose.models.Album || mongoose.model('Album', albumSchema);
 
 export default Album;

@@ -13,8 +13,10 @@ import {
     getAllFavoriteSongs,
     addFavoriteSong,
     removeFavoriteSong,
+    fetchAllArtists,
+    getArtistById,
 } from '../controllers/user.controller.js'; // Correct the path
-import { isAuthenticated } from '../middleware/auth.middleware.js';
+import { authorizeRoles, isAuthenticated } from '../middleware/auth.middleware.js';
 import {
     addSongToPlaylist,
     createPlaylist,
@@ -60,5 +62,9 @@ userRouter.post('/createPlaylists', isAuthenticated, createPlaylist); // Create 
 userRouter.post('/playlists/add-song', isAuthenticated, addSongToPlaylist); // Add a song to a playlist
 userRouter.post('/playlists/remove-song', isAuthenticated, removeSongFromPlaylist); // Remove a song from a playlist
 userRouter.delete('/playlists', isAuthenticated, deletePlaylist); // Delete a playlist
+
+userRouter.get('/all-artists', isAuthenticated, authorizeRoles("artist", "user", "admin"), fetchAllArtists);
+
+userRouter.get('/artist-detail/:artistId',isAuthenticated, authorizeRoles("artist", "user", "admin"),getArtistById)
 
 export default userRouter;

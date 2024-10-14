@@ -3,6 +3,7 @@ import { createArtistProfileController, deleteAlbum, deleteSong, updateAlbum, up
 import { authorizeRoles, isAuthenticated } from "../middleware/auth.middleware.js";
 import { uploadSingle, uploadMultiple }from "../utils/mullter.js";
 import { uploadAlbum, uploadSingleSong } from "../controllers/album.controller.js";
+import { fetchAllArtists } from "../controllers/user.controller.js";
 
 const artistRouter = express.Router();
 // Route for single song upload
@@ -59,6 +60,7 @@ artistRouter.delete('/delete-album/:albumId',
     authorizeRoles("artist"),
     deleteAlbum // Call your controller function to delete the album
 );
+
 
 // Export the artist router
 export default artistRouter;
