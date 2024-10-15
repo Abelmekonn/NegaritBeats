@@ -1,17 +1,32 @@
-import React from 'react'
-import { IoIosSearch } from 'react-icons/io'
-import { Link } from 'react-router-dom'
+import React, { useState, useEffect } from 'react';
+import { IoIosSearch } from 'react-icons/io';
+import { Link } from 'react-router-dom';
 
 const Header = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 60) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <div className=' py-4 fixed z-50'>
-      <div className='flex  items-center gap-14 px-6  mx-auto'>
+    <div className={`py-4 fixed z-50 w-auto mx-auto bg-zinc-400 rounded-lg bg-opacity-60 transition-all duration-300 ${isScrolled ? 'bg-opacity-70' : ''}`}>
+      <div className='flex items-center gap-14 px-6 mx-auto'>
         {/* Search Input */}
         <div className='relative'>
           <IoIosSearch className='rotate-90 absolute bottom-[10px] left-2 text-gray-50' size={24} />
           <input
             type="text"
-            className='py-2 pl-10 pr-4 w-80 rounded-lg bg-[#666262] text-gray-50 placeholder-gray-300 focus:outline-none'
+            className='py-2 pl-10 pr-4 w-80 rounded-lg bg-[#282727] text-gray-50 placeholder-gray-300 focus:outline-none'
             placeholder='Search for Music, Artists, ...'
           />
         </div>
@@ -42,7 +57,7 @@ const Header = () => {
         </Link>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default Header;

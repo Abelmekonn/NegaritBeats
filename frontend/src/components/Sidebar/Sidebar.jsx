@@ -38,18 +38,18 @@ const Sidebar = () => {
     ];
 
     return (
-        <div className='relative  text-white h-screen  py-8 pl-6 w-96 overflow-y-auto sidebar-scrollbar'>
-            <div className='py-2 text-4xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent mb-5'>
+        <div className='relative  text-white h-screen  py-8  w-80 overflow-y-auto sidebar-scrollbar'>
+            <div className='py-2 text-4xl text-center font-bold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent mb-5'>
                 NegaritBeats
             </div>
 
             {/* Menu Section */}
             <div className='flex flex-col gap-3'>
                 <div className='flex flex-col gap-7 mb-2'>
-                    <p className='text-[#991272]'>Menu</p>
+                    <p className='text-[#991272] px-3'>Menu</p>
                     <div className='px-4 flex flex-col gap-6'>
                         {menuItems.map((item, index) => (
-                            <Link key={index} to={item.to} className='flex items-center gap-3 hover:bg-pink-500 rounded-lg hover:scale-105 cursor-pointer py-2 px-3'>
+                            <Link key={index} to={item.to} className='flex items-center gap-3 hover:bg-pink-500 rounded-lg hover:scale-105 cursor-pointer py-2 px-2'>
                                 {item.icon}
                                 <span className='text-2xl font-semibold'>{item.label}</span>
                             </Link>
@@ -59,7 +59,7 @@ const Sidebar = () => {
 
                 {/* Library Section */}
                 <div className='flex flex-col gap-7 mb-2'>
-                    <p className='text-[#991272]'>Library</p>
+                    <p className='text-[#991272] px-3'>Library</p>
                     <div className='px-4 flex flex-col gap-6'>
                         {libraryItems.map((item, index) => (
                             <Link key={index} to={item.to} className='flex items-center gap-3 hover:bg-pink-500 rounded-lg hover:scale-105 cursor-pointer py-2 px-3'>
@@ -72,7 +72,7 @@ const Sidebar = () => {
 
                 {/* Playlist and Favorite Section */}
                 <div className='flex flex-col gap-7 mb-2'>
-                    <p className='text-[#991272]'>Playlist and Favorite</p>
+                    <p className='text-[#991272] px-3'>Playlist and Favorite</p>
                     <div className='px-4 flex flex-col gap-6'>
                         {playlistItems.map((item, index) => (
                             <Link key={index} to={item.to} className='flex items-center gap-3 hover:bg-pink-500 rounded-lg hover:scale-105 cursor-pointer py-2 px-3'>
@@ -85,7 +85,7 @@ const Sidebar = () => {
 
                 {/* General Section */}
                 <div className='flex flex-col gap-7'>
-                    <p className='text-[#991272]'>General</p>
+                    <p className='text-[#991272] px-3'>General</p>
                     <div className='px-4 flex flex-col gap-6'>
                         {generalItems.map((item, index) => (
                             <Link key={index} to={item.to} className='flex items-center gap-3 hover:bg-pink-500 rounded-lg hover:scale-105 cursor-pointer py-2 px-3'>
