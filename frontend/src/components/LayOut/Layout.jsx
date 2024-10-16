@@ -14,8 +14,8 @@ const Layout = ({ children }) => {
                     {children} {/* This will render the dynamic content */}
                 </div>
                 <Footer />
+                <MusicPlayer />
             </div>
-            <MusicPlayer />
         </div>
     );
 }

@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unknown-property */
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
-import React from 'react';
+import React, { useContext } from 'react';
 import cover1 from '../../assets/cover/cover1.jpg';
 import cover2 from '../../assets/cover/cover2.jpg';
 import cover3 from '../../assets/cover/cover3.jpg';
@@ -10,6 +10,8 @@ import cover5 from '../../assets/cover/cover5.jpg';
 import cover6 from '../../assets/cover/cover6.jpg';
 import { GrFavorite } from "react-icons/gr";
 import { IoAdd } from 'react-icons/io5';
+import { FaPlay } from "react-icons/fa";
+import MusicPlayerContext  from '../../context/MusicPlayerContext'; // Import the context
 
 const songs = [
     {
@@ -92,7 +94,7 @@ const tdStyle = css`
     padding: 10px;
 `;
 
-const tdHasta= css`
+const tdHasta = css`
     font-size: 22px; /* Set font size to 18px */
     color: white;
 `
@@ -117,6 +119,7 @@ const durationContainerStyle = css`
 `;
 
 const TrendingSongs = () => {
+    const { playTrack } = useContext(MusicPlayerContext); // Access playTrack from context
     return (
         <div >
             <h1 className='text-white text-3xl font-bold'>
@@ -137,8 +140,14 @@ const TrendingSongs = () => {
                         <tr key={song.id} css={rowStyle}>
                             <td css={tdHasta}>#{song.id}</td>
                             <td css={tdStyle}>
-                                <div css={coverContainerStyle}>
+                                <div css={coverContainerStyle} className='relative'>
                                     <img src={song.cover} className='rounded-lg' alt={song.title} style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
+                                    <div
+                                        className='text-pink-600 absolute  p-4 bg-[#00000080] rounded-full cursor-pointer  items-center justify-center'
+                                        onClick={() => playTrack(song)} // Pass the song to the player context
+                                    >
+                                        <FaPlay size={20} />
+                                    </div>
                                     <div css={detailsContainerStyle}>
                                         <div className='text-lg font-medium'>{song.title}</div>
                                         <div className='text-md text-gray-400'>{song.artist}</div>
@@ -159,7 +168,7 @@ const TrendingSongs = () => {
             </table>
             <div className='w-full flex justify-center mt-5'>
                 <button className='flex bg-gray-800 py-2 px-4 rounded-lg text-white items-center'>
-                    <IoAdd size={30}/> View All
+                    <IoAdd size={30} /> View All
                 </button>
             </div>
         </div>

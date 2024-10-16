@@ -1,18 +1,56 @@
+// src/components/MusicPlayer/MusicPlayer.jsx
 import React from 'react';
-import { useMusicPlayer } from '../../context/MusicPlayerContext'; // Get the global state for the player
+import { useMusicPlayer } from '../../context/MusicPlayerContext'; // Correct import
+import { FaPlay, FaPause, FaStepForward, FaStepBackward, FaRedo } from 'react-icons/fa'; // Import necessary icons
 
 const MusicPlayer = () => {
-    const { currentTrack } = useMusicPlayer(); // Get the currently playing track
-
-    if (!currentTrack) return null; // Return nothing if no track is playing
+    const {
+        currentTrack,
+        isPlaying,
+        playTrack,
+        pauseTrack,
+        nextTrack,
+        prevTrack,
+        repeatTrack,
+    } = useMusicPlayer(); // Access current track and controls
 
     return (
-        <div className="fixed bottom-0 left-0 w-full bg-gray-900 text-white p-4 flex justify-between items-center shadow-lg z-50">
-            <div>
-                <h4 className="text-lg font-bold">{currentTrack.name}</h4>
-                <p>{currentTrack.artist}</p>
-            </div>
-            <audio controls src={currentTrack.src} className="w-1/2" />
+        <div className='fixed bottom-0 w-[80%] bg-gray-800 p-4'>
+            {currentTrack ? (
+                <div className='flex items-center gap-60'>
+                    <div className='flex items-center'>
+                        <img src={currentTrack.cover} alt={currentTrack.title} className='w-16 h-16 object-cover rounded-md' />
+                        <div className='ml-4'>
+                            <h3 className='text-white'>{currentTrack.title}</h3>
+                            <p className='text-gray-400'>{currentTrack.artist}</p>
+                        </div>
+                    </div>
+                    <div className='flex items-center self-center'>
+                        <button onClick={prevTrack} className='text-white mx-2'>
+                            <FaStepBackward size={24} />
+                        </button>
+                        {isPlaying ? (
+                            <button onClick={pauseTrack} className='text-white mx-2'>
+                                <FaPause size={24} />
+                            </button>
+                        ) : (
+                            <button onClick={playTrack} className='text-white mx-2'>
+                                <FaPlay size={24} />
+                            </button>
+                        )}
+                        <button onClick={nextTrack} className='text-white mx-2'>
+                            <FaStepForward size={24} />
+                        </button>
+                        <button onClick={repeatTrack} className='text-white mx-2'>
+                            <FaRedo size={24} />
+                        </button>
+                    </div>
+                </div>
+
+            ) : (
+
+                <p className='text-gray-400'></p>
+            )}
         </div>
     );
 };
