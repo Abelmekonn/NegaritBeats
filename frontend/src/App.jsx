@@ -1,16 +1,25 @@
-import { useState } from 'react'
-import './App.css'
-import Home from './pages/Home/Home'
-import Layout from './components/LayOut/Layout'
+import { Route, Routes } from 'react-router-dom';
+import './App.css';
+import Home from './pages/Home/Home';
+import Layout from './components/LayOut/Layout';
+import Discover from './pages/Discover/Discover';
+import Artist from './pages/Artist/Artist';
+import ArtistDetail from './pages/Artist/ArtistDetail';
+import { MusicPlayerProvider } from './context/MusicPlayerContext';
 
 function App() {
   return (
-    <>
+    <MusicPlayerProvider>
       <Layout>
-        <Home />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/discover" element={<Discover />} />
+          <Route path="/artists" element={<Artist />} />
+          <Route path="/artist/:id" element={<ArtistDetail />} />
+        </Routes>
       </Layout>
-    </>
-  )
+    </MusicPlayerProvider>
+  );
 }
 
-export default App
+export default App;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import cover1 from '../../assets/cover/cover1.jpg';
 import cover2 from '../../assets/cover/cover2.jpg';
 import cover3 from '../../assets/cover/cover3.jpg';
@@ -45,11 +45,11 @@ const songs = [
     // }
 ];
 
-const NewRelease = () => {
+const SingleArtistAlbum = () => {
     return (
         <div>
             <h1 className='text-white text-3xl font-bold'>
-                New Release <span className='text-pink-500'>Songs</span>
+                Artist <span className='text-pink-500'>Albums</span>
             </h1>
             <div>
                 <div className='grid grid-cols-6 gap-4 mt-7'>
@@ -69,7 +69,7 @@ const NewRelease = () => {
                 </div>
             </div>
         </div>
-    );
-};
+    )
+}
 
-export default NewRelease;
+export default SingleArtistAlbum

@@ -45,11 +45,11 @@ const songs = [
     // }
 ];
 
-const NewRelease = () => {
+const SingleSongs = () => {
     return (
         <div>
             <h1 className='text-white text-3xl font-bold'>
-                New Release <span className='text-pink-500'>Songs</span>
+                Single <span className='text-pink-500'>Songs</span>
             </h1>
             <div>
                 <div className='grid grid-cols-6 gap-4 mt-7'>
@@ -72,4 +72,4 @@ const NewRelease = () => {
     );
 };
 
-export default NewRelease;
+export default SingleSongs;
