@@ -38,8 +38,8 @@ const Sidebar = () => {
     ];
 
     return (
-        <div className='relative  text-white h-screen  py-8  w-80 overflow-y-auto sidebar-scrollbar'>
-            <div className='py-2 text-4xl text-center font-bold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent mb-5'>
+        <div className='relative  text-white  py-8  w-72 overflow-y-auto sidebar-scrollbar'>
+            <div className='py-2 text-3xl text-center font-bold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent mb-5'>
                 NegaritBeats
             </div>
 
@@ -51,7 +51,7 @@ const Sidebar = () => {
                         {menuItems.map((item, index) => (
                             <Link key={index} to={item.to} className='flex items-center gap-3 hover:bg-pink-500 rounded-lg hover:scale-105 cursor-pointer py-2 px-2'>
                                 {item.icon}
-                                <span className='text-2xl font-semibold'>{item.label}</span>
+                                <span className='text-xl font-semibold'>{item.label}</span>
                             </Link>
                         ))}
                     </div>
@@ -64,7 +64,7 @@ const Sidebar = () => {
                         {libraryItems.map((item, index) => (
                             <Link key={index} to={item.to} className='flex items-center gap-3 hover:bg-pink-500 rounded-lg hover:scale-105 cursor-pointer py-2 px-3'>
                                 {item.icon}
-                                <span className='text-2xl font-semibold'>{item.label}</span>
+                                <span className='text-xl font-semibold'>{item.label}</span>
                             </Link>
                         ))}
                     </div>
@@ -77,7 +77,7 @@ const Sidebar = () => {
                         {playlistItems.map((item, index) => (
                             <Link key={index} to={item.to} className='flex items-center gap-3 hover:bg-pink-500 rounded-lg hover:scale-105 cursor-pointer py-2 px-3'>
                                 {item.icon}
-                                <span className='text-2xl font-semibold'>{item.label}</span>
+                                <span className='text-xl font-semibold'>{item.label}</span>
                             </Link>
                         ))}
                     </div>
@@ -90,7 +90,7 @@ const Sidebar = () => {
                         {generalItems.map((item, index) => (
                             <Link key={index} to={item.to} className='flex items-center gap-3 hover:bg-pink-500 rounded-lg hover:scale-105 cursor-pointer py-2 px-3'>
                                 {item.icon}
-                                <span className='text-2xl font-semibold'>{item.label}</span>
+                                <span className='text-xl font-semibold'>{item.label}</span>
                             </Link>
                         ))}
                     </div>
