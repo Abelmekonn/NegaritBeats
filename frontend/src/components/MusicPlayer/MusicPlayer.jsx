@@ -81,9 +81,9 @@ const MusicPlayer = () => {
     };
 
     return (
-        <div className='fixed bottom-0 w-[80%] bg-gray-800 p-4'>
+        <div className='fixed bottom-0 w-[80%] bg-gray-800 '>
             {currentTrack ? (
-                <div className='flex items-center justify-between'>
+                <div className='p-4 flex items-center justify-between'>
                     {/* Track details */}
                     <div className='flex items-center '>
                         <img src={currentTrack.cover} alt={currentTrack.title} className='w-16 h-16 object-cover rounded-md' />
@@ -155,9 +155,8 @@ const MusicPlayer = () => {
                         />
                     </div>
                 </div>
-
             ) : (
-                <p className='text-gray-400'>No track selected</p>
+                <p className='text-gray-400 hidden'></p>
             )}
         </div>
     );

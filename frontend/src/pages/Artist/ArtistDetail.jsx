@@ -65,7 +65,6 @@ const ArtistDetail = () => {
                     </div>
                 </div>
             </div>
-
             <SingleArtistMusics />
             <SingleArtistAlbum />
             <SingleSongs />

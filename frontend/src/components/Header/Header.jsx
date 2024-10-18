@@ -19,7 +19,7 @@ const Header = () => {
   }, []);
 
   return (
-    <div className={`py-4 fixed z-50 w-auto mx-auto bg-zinc-400 rounded-lg bg-opacity-60 transition-all duration-300 ${isScrolled ? 'bg-opacity-70' : ''}`}>
+    <div className={`py-4  absolute ml-5 z-50 w-auto mx-auto bg-zinc-400 rounded-lg bg-opacity-60 transition-all duration-300 ${isScrolled ? 'bg-opacity-70' : ''}`}>
       <div className='flex items-center gap-14 px-6 mx-auto'>
         {/* Search Input */}
         <div className='relative'>
