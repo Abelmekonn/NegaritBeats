@@ -19,10 +19,10 @@ const Header = () => {
   }, []);
 
   return (
-    <div className={`py-4  absolute ml-5 z-50 w-auto mx-auto bg-zinc-400 rounded-lg bg-opacity-60 transition-all duration-300 ${isScrolled ? 'bg-opacity-70' : ''}`}>
-      <div className='flex items-center gap-14 px-6 mx-auto'>
+    <div className={`py-4 w-full z-50  mx-auto bg-zinc-400 rounded-lg bg-opacity-60 transition-all duration-300 ${isScrolled ? 'bg-opacity-70' : ''}`}>
+      <div className='flex items-center justify-between px-6 mx-auto'>
         {/* Search Input */}
-        <div className='relative'>
+        <div className='hidden md:block relative'>
           <IoIosSearch className='rotate-90 absolute bottom-[10px] left-2 text-gray-50' size={24} />
           <input
             type="text"
@@ -32,29 +32,35 @@ const Header = () => {
         </div>
 
         {/* Links */}
-        <Link to='/about' className='text-white text-xl font-medium text-center'>
-          About Us
-        </Link>
-        <Link to='/contact' className='text-white text-xl font-medium text-center'>
-          Contact
-        </Link>
-        <Link to='/premium' className='text-white text-xl font-medium text-center'>
-          Premium
-        </Link>
+        <div className='flex gap-5'>
+          <Link to='/about' className='text-white text-xl font-medium text-center'>
+            About Us
+          </Link>
+          <Link to='/contact' className='text-white text-xl font-medium text-center'>
+            Contact
+          </Link>
+          <Link to='/premium' className='text-white text-xl font-medium text-center'>
+            Premium
+          </Link>
+
+        </div>
 
         {/* Log In Button */}
-        <Link to='/login' className='flex flex-col justify-center'>
-          <button className='px-12 py-2 border border-[#EE10B0] rounded-md'>
-            <p className='text-[#EE10B0] font-medium text-center'>Log In</p>
-          </button>
-        </Link>
+        <div className='flex gap-3'>
+          <Link to='/login' className='flex flex-col justify-center'>
+            <button className='px-4 py-2  border border-[#EE10B0] rounded-md'>
+              <p className='text-[#EE10B0] font-medium text-center'>Log In</p>
+            </button>
+          </Link>
 
-        {/* Sign Up Button */}
-        <Link to='/register' className='flex flex-col justify-center'>
-          <button className='px-12 py-2 rounded-md bg-[#EE10B0]'>
-            <p className='text-white font-medium text-center'>Sign Up</p>
-          </button>
-        </Link>
+          {/* Sign Up Button */}
+          <Link to='/register' className='flex flex-col justify-center'>
+            <button className='px-4 py-2  rounded-md bg-[#EE10B0]'>
+              <p className='text-white font-medium text-center'>Sign Up</p>
+            </button>
+          </Link>
+        </div>
+
       </div>
     </div>
   );

@@ -11,7 +11,7 @@ const subscriptionSchema = new Schema({
     },
     planType: {
         type: String,
-        enum: ['free', 'monthly', 'yearly'],
+        enum: ['free', 'individual', 'family','student'],
         default: 'free',
     },
     startDate: {

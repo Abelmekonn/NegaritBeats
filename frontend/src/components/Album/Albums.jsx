@@ -238,7 +238,7 @@ const durationContainerStyle = css`
 
 const Albums = () => {
     return (
-        <div>
+        <div className=''>
             <h1 className='text-white text-3xl font-bold'>
                 Trending <span className='text-pink-500'>Albums</span>
             </h1>

@@ -1,13 +1,14 @@
 import React from 'react'
 import { useParams } from 'react-router-dom'
 import ArtistAlbum from '../../components/Album/ArtistAlbum'
+import Layout from '../../components/LayOut/Layout'
 
 const AlbumDetail = () => {
-    const {id} = useParams()
+  const { id } = useParams()
   return (
-    <div>
-        <ArtistAlbum  id={id}/>
-    </div>
+    <Layout >
+      <ArtistAlbum id={id} />
+    </Layout>
   )
 }
 

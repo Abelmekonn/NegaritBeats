@@ -1,21 +1,24 @@
-// src/redux/store.js
 import { configureStore } from '@reduxjs/toolkit';
 import createSagaMiddleware from 'redux-saga';
-import rootReducer from './features';  // Import the root reducer that combines all slices
-import rootSaga from './sagas';         // Import the root saga
+import userReducer from './features/user/userSlice';
+import userSaga from './sagas/user/userSaga';
 
-// Create the saga middleware
+// Create saga middleware
 const sagaMiddleware = createSagaMiddleware();
 
-// Configure the Redux store
+// Configure the store with saga middleware and user reducer
 const store = configureStore({
-    reducer: rootReducer,  // Use the combined reducers from the rootReducer
-    middleware: (getDefaultMiddleware) => 
-        getDefaultMiddleware({ thunk: false }).concat(sagaMiddleware),  // Disable thunk and add saga middleware
-    devTools: process.env.NODE_ENV !== 'production', // Enable Redux DevTools in development mode
+    reducer: {
+        user: userReducer, // Add user reducer
+    },
+    middleware: (getDefaultMiddleware) =>
+        getDefaultMiddleware({
+            thunk: false, // Disable thunk as we are using saga
+            serializableCheck: false,
+        }).concat(sagaMiddleware),
 });
 
-// Run the root saga
-sagaMiddleware.run(rootSaga);
+// Run the saga middleware
+sagaMiddleware.run(userSaga);
 
-export default store;  // Export the configured store
+export default store;

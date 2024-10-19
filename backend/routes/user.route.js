@@ -15,6 +15,7 @@ import {
     removeFavoriteSong,
     fetchAllArtists,
     getArtistById,
+    logoutUser,
 } from '../controllers/user.controller.js'; // Correct the path
 import { authorizeRoles, isAuthenticated } from '../middleware/auth.middleware.js';
 import {
@@ -35,6 +36,9 @@ userRouter.post('/activate', activateUser);
 
 // User login route
 userRouter.post('/login', loginUser);
+
+// log out
+userRouter.post('/logout', logoutUser)
 
 // Get profile (protected route)
 userRouter.get('/profile', isAuthenticated, getUserProfile);

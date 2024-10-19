@@ -4,8 +4,8 @@ import { FaFacebook, FaInstagram, FaPhone, FaTwitter } from 'react-icons/fa';
 const Footer = () => {
     return (
         <div className='bg-gray-900 py-8 mt-12'>
-            <div className='flex flex-col md:flex-row justify-around text-white mx-4'>
-                <div className='mb-6 md:mb-0 w-1/3'>
+            <div className='grid grid-cols-2 md:grid-cols-5 gap-6 justify-around text-white mx-4'>
+                <div className='mb-6 md:mb-0 px-6 '>
                     <h2 className='text-4xl mb-6 font-semibold'>About</h2>
                     <p className='text-sm text-gray-300'>
                         Lorem ipsum dolor sit amet consectetur adipisicing elit. Facilis eos unde voluptates odit minima, blanditiis nemo, et doloribus non sed labore rem maiores autem necessitatibus alias ab ut, cumque magnam.
