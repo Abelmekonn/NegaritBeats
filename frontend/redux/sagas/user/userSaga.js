@@ -1,5 +1,6 @@
 import { call, put, takeLatest } from 'redux-saga/effects';
 import axios from 'axios';
+import { toast } from 'react-hot-toast';
 import {
     registerUserRequest,
     registerUserSuccess,
@@ -16,75 +17,115 @@ import {
     activateUserRequest,
     activateUserSuccess,
     activateUserFailure,
+    resendOtpRequest,
+    resendOtpSuccess,
+    resendOtpFailure,
+    setActivationToken,
 } from '../../features/user/userSlice';
 
-// Load backend API URL from environment variable
-const API_BASE_URL =  import.meta.env.VITE_API_URL || 'http://localhost:8000/api/';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/';
 
 // API requests
-const apiRegister = (data) => axios.post(`${API_BASE_URL}user/register`, data);
-const apiLogin = (data) => axios.post(`${API_BASE_URL}user/login`, data);
-const apiLogout = () => axios.post(`${API_BASE_URL}user/logout`);
-const apiGetProfile = () => axios.get(`${API_BASE_URL}user/profile`);
-const apiActivate = (token) => axios.post(`${API_BASE_URL}user/activate`, { token });
+const apiRegister = (data) => axios.post(`${API_BASE_URL}users/register`, data);
+const apiLogin = (data) => axios.post(`${API_BASE_URL}users/login`, data);
+const apiLogout = () => axios.post(`${API_BASE_URL}users/logout`);
+const apiGetProfile = () => axios.get(`${API_BASE_URL}users/profile`);
+const apiResendOtp = (data) => axios.post(`${API_BASE_URL}users/resend-otp`, data);
+const apiActivate = (data) => axios.post(`${API_BASE_URL}users/activate`, data);
 
-// Worker saga: handle registration
+// Worker saga for user registration
 function* registerUserSaga(action) {
     try {
         const response = yield call(apiRegister, action.payload);
-        yield put(registerUserSuccess(response.data));
+        const { activationToken } = response.data; // Extract the activationToken
+        console.log(response.data)
+        // Dispatch action to store the activation token
+        yield put(setActivationToken(activationToken));
+        yield put(registerUserSuccess()); // Dispatch success action
+        toast.success('Registration successful! Please check your email for the activation link.');
     } catch (error) {
-        yield put(registerUserFailure(error.response?.data?.message || 'Registration failed'));
+        const message = error.response?.data?.message || 'Registration failed';
+        yield put(registerUserFailure(message)); // Dispatch failure action
+        toast.error(message);
     }
 }
 
-// Worker saga: handle login
+// Worker saga for user login
 function* loginUserSaga(action) {
     try {
-        const response = yield call(apiLogin, action.payload);
-        yield put(loginUserSuccess(response.data));
+        const { data } = yield call(apiLogin, action.payload);
+        yield put(loginUserSuccess(data)); // Dispatch success action with user data
+        toast.success('Login successful!');
     } catch (error) {
-        yield put(loginUserFailure(error.response?.data?.message || 'Login failed'));
+        const message = error.response?.data?.message || 'Login failed';
+        yield put(loginUserFailure(message)); // Dispatch failure action
+        toast.error(message);
     }
 }
 
-// Worker saga: handle logout
+// Worker saga for user logout
 function* logoutUserSaga() {
     try {
-        yield call(apiLogout);
-        yield put(logoutUserSuccess());
+        yield call(apiLogout); // Call API for logout
+        yield put(logoutUserSuccess()); // Dispatch success action
+        toast.success('Logout successful!');
     } catch (error) {
-        yield put(logoutUserFailure(error.response?.data?.message || 'Logout failed'));
+        const message = error.response?.data?.message || 'Logout failed';
+        yield put(logoutUserFailure(message)); // Dispatch failure action
+        toast.error(message);
     }
 }
 
-// Worker saga: handle get profile
+// Worker saga for getting user profile
 function* getProfileSaga() {
     try {
-        const response = yield call(apiGetProfile);
-        yield put(getProfileSuccess(response.data));
+        const { data } = yield call(apiGetProfile); // Call API to get user profile
+        yield put(getProfileSuccess(data)); // Dispatch success action with user profile data
     } catch (error) {
-        yield put(getProfileFailure(error.response?.data?.message || 'Fetching profile failed'));
+        const message = error.response?.data?.message || 'Fetching profile failed';
+        yield put(getProfileFailure(message)); // Dispatch failure action
+        toast.error(message);
     }
 }
 
-// New: Worker saga for account activation
+// Worker saga for activating user account
 function* activateUserSaga(action) {
     try {
-        const response = yield call(apiActivate, action.payload);  // payload contains the activation token
-        yield put(activateUserSuccess());
+        const { activation_code, activation_token } = action.payload;
+
+        console.log('Activating user with:', { activation_code, activation_token });
+        yield call(apiActivate, { activation_code, activation_token }); // Call API to activate user
+        yield put(activateUserSuccess()); // Dispatch success action
+        toast.success('Account activated successfully!');
     } catch (error) {
-        yield put(activateUserFailure(error.response?.data?.message || 'Activation failed'));
+        console.error('Error response:', error.response); // Log the error response
+        const message = error.response?.data?.message || 'Activation failed';
+        yield put(activateUserFailure(message)); // Dispatch failure action
+        toast.error(message);
     }
 }
 
-// Watcher saga: listen for actions
+// Worker saga for resending OTP
+function* resendOtpSaga(action) {
+    try {
+        const { data } = yield call(apiResendOtp, action.payload); // Call API to resend OTP
+        yield put(resendOtpSuccess(data)); // Dispatch success action
+        toast.success('Activation email has been resent!');
+    } catch (error) {
+        const message = error.response?.data?.message || 'Resending OTP failed';
+        yield put(resendOtpFailure(message)); // Dispatch failure action
+        toast.error(message);
+    }
+}
+
+// Watcher saga
 function* userSaga() {
     yield takeLatest(registerUserRequest.type, registerUserSaga);
     yield takeLatest(loginUserRequest.type, loginUserSaga);
     yield takeLatest(logoutUserRequest.type, logoutUserSaga);
     yield takeLatest(getProfileRequest.type, getProfileSaga);
-    yield takeLatest(activateUserRequest.type, activateUserSaga);  // Listen for activation request
+    yield takeLatest(activateUserRequest.type, activateUserSaga);
+    yield takeLatest(resendOtpRequest.type, resendOtpSaga);
 }
 
 export default userSaga;

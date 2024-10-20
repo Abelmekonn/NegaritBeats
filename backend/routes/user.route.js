@@ -16,6 +16,7 @@ import {
     fetchAllArtists,
     getArtistById,
     logoutUser,
+    resendOtp,
 } from '../controllers/user.controller.js'; // Correct the path
 import { authorizeRoles, isAuthenticated } from '../middleware/auth.middleware.js';
 import {
@@ -33,6 +34,9 @@ userRouter.post('/register', registrationUser);
 
 // User activation route
 userRouter.post('/activate', activateUser);
+
+// otp resend
+userRouter.post('/resend-otp', resendOtp);
 
 // User login route
 userRouter.post('/login', loginUser);

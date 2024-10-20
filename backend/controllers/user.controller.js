@@ -10,7 +10,7 @@ import { redis } from '../utils/redis.js';
 
 // Register user
 export const registrationUser = catchAsyncError(async (req, res, next) => {
-    const { name, email, password, role  } = req.body; // Default role
+    const { name, email, password  } = req.body; // Default role
 
     // Check if the email already exists
     const isEmailExist = await userModel.findOne({ email });
@@ -19,7 +19,7 @@ export const registrationUser = catchAsyncError(async (req, res, next) => {
     }
 
     // User object including role
-    const user = { name, email, password, role };
+    const user = { name, email, password };
 
     // Create activation token
     const activationToken = createActivationToken(user);
@@ -59,6 +59,48 @@ const createActivationToken = (user) => {
     return { token, activationCode };
 };
 
+// Resend activation email (OTP)
+export const resendOtp = catchAsyncError(async (req, res, next) => {
+    const { email } = req.body;
+
+    // Check if the user exists
+    const user = await userModel.findOne({ email });
+    if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Create a new activation token
+    const activationToken = createActivationToken({ 
+        name: user.name, 
+        email: user.email, 
+        password: user.password, // Consider if you want to expose the password here
+        role: user.role 
+    });
+    const activationCode = activationToken.activationCode;
+
+    // Prepare data for email
+    const data = { user: { name: user.name }, activationCode };
+
+    try {
+        // Send activation email
+        await sendMail({
+            email: user.email,
+            subject: "Resend Activation Email",
+            template: "activation-mail.ejs", // Email template
+            data,
+        });
+
+        res.status(200).json({
+            success: true,
+            message: `Activation email has been resent to ${user.email}!`,
+            activationToken: activationToken.token,
+        });
+    } catch (error) {
+        return res.status(400).json({ success: false, message: error.message });
+    }
+});
+
+
 // Activate user
 export const activateUser = catchAsyncError(async (req, res, next) => {
     const { activation_token, activation_code } = req.body;
@@ -80,7 +122,7 @@ export const activateUser = catchAsyncError(async (req, res, next) => {
         return res.status(400).json({ success: false, message: "Invalid activation code" });
     }
 
-    const { name, email, password, role } = newUser.user; // Include role
+    const { name, email, password } = newUser.user; // Include role
 
     // Check if the user already exists
     const existUser = await userModel.findOne({ email });
@@ -89,7 +131,7 @@ export const activateUser = catchAsyncError(async (req, res, next) => {
     }
 
     // Create new user with role
-    await userModel.create({ name, email, password, role });
+    await userModel.create({ name, email, password });
 
     res.status(201).json({
         success: true,

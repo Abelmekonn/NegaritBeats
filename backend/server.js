@@ -1,7 +1,6 @@
-// server.js
 import dotenv from 'dotenv'; // Import dotenv using ES module syntax
-import { app } from './app.js'; // Import the app instance (make sure to include .js extension)
-import connectDb from './config/db.config.js'; // Import database connection function (include .js extension)
+import { app } from './app.js'; // Import the app instance
+import connectDb from './config/db.config.js'; // Import database connection function
 import { v2 as cloudinary } from 'cloudinary'; // Import Cloudinary
 
 // Load environment variables

@@ -13,6 +13,7 @@ import Setting from './pages/Settings/Setting';
 import store from '../redux/store'; // Ensure you import your Redux store
 import Login from './pages/Auth/Login';
 import SignUp from './components/Auth/SignUp';
+import Otp from './pages/Auth/Otp';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           {/* Auth route not wrapped in Layout */}
           <Route path="/login" element={<Login />} />
           <Route path='/register' element={<SignUp />} />
+          <Route path='/activate' element={<Otp />} />
           {/* Wrap all other routes in Layout */}
           <Route path='/' element={<Home />} />
           <Route path="discover" element={<Discover />} />
