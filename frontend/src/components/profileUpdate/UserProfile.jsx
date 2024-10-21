@@ -1,23 +1,43 @@
-import React, { useState } from 'react';
-import { AiOutlineCamera } from 'react-icons/ai'; // Ensure you have react-icons installed
+import React, { useEffect, useState } from 'react';
+import { AiOutlineCamera } from 'react-icons/ai';
+import { useSelector, useDispatch } from 'react-redux';
+import Cookies from 'js-cookie';
+import { toast } from 'react-hot-toast';
+import {
+    updateProfileRequest,
+    updateProfileSuccess,
+} from '../../../redux/features/user/userSlice'; // Import relevant actions
 
 const UserProfile = () => {
+    const dispatch = useDispatch();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [avatar, setAvatar] = useState(null);
-    const [email, setEmail] = useState('user@example.com');
-    const avatarDefault = '/path/to/default-avatar.jpg'; // Placeholder for the default avatar image
+    const [email, setEmail] = useState(''); // Initial email state
+    const user = useSelector((state) => state.user.user);
+    const loading = useSelector((state) => state.user.loading); // Access loading state
+    const token = Cookies.get('access_token');
+
+    useEffect(() => {
+        if (user) {
+            setUsername(user.name || '');
+            setEmail(user.email || '');
+        }
+    }, [user]);
+
+    
 
     // Handle image change
     const imageHandler = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setAvatar(file);
-            // Optionally, show preview
+            setAvatar(file); // Set file for form submission
+
+            // For preview
             const reader = new FileReader();
             reader.onload = () => {
-                setAvatar({ url: reader.result });
+                setAvatar({ ...avatar, previewUrl: reader.result });
             };
             reader.readAsDataURL(file);
         }
@@ -28,31 +48,17 @@ const UserProfile = () => {
         e.preventDefault();
 
         if (password !== confirmPassword) {
-            alert('Passwords do not match!');
+            toast.error('Passwords do not match!');
             return;
         }
 
         const formData = new FormData();
         formData.append('username', username);
-        formData.append('password', password);
+        if (password) formData.append('password', password);
         if (avatar) formData.append('avatar', avatar);
 
-        fetch('/api/update-profile', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'Authorization': `Bearer ${token}`, // Include user's token if needed
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Profile updated successfully', data);
-                // Handle success
-            })
-            .catch(error => {
-                console.error('Error updating profile:', error);
-                // Handle error
-            });
+        // Dispatch the profile update action
+        dispatch(updateProfileRequest(formData, token));
     };
 
     return (
@@ -65,7 +71,7 @@ const UserProfile = () => {
                 {/* Avatar Image Section */}
                 <div className="relative w-[120px] h-[120px] mx-auto mb-6">
                     <img
-                        src={avatar?.url ? avatar.url : avatarDefault}
+                        src={avatar?.previewUrl || user?.avatar?.url}
                         alt="User Avatar"
                         className="w-[150px] h-[120px] cursor-pointer border-[3px] border-pink-600 rounded-full"
                         width={120}
@@ -84,6 +90,7 @@ const UserProfile = () => {
                         </div>
                     </label>
                 </div>
+
                 {/* Email (Read-only) */}
                 <div>
                     <label className="text-white font-semibold block mb-2">Email</label>
@@ -131,12 +138,14 @@ const UserProfile = () => {
                     />
                 </div>
 
-                
-
                 <button
                     type="submit"
-                    className="w-full bg-pink-500 p-3 rounded-lg text-white font-bold hover:bg-pink-600 transition">
-                    Update Profile
+                    disabled={loading} // Disable the button during loading
+                    className={`w-full bg-pink-500 p-3 rounded-lg text-white font-bold transition ${
+                        loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-pink-600'
+                    }`}
+                >
+                    {loading ? 'Updating...' : 'Update Profile'}
                 </button>
             </form>
         </div>

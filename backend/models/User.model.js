@@ -25,11 +25,12 @@ const userSchema = new Schema({
     avatar: {
         public_id: {
             type: String,
-            required: true,
+            default: "avatars/y58icrh8ipwidybzav2b"
         },
         url: {
             type: String,
             required: true,
+            default: "https://res.cloudinary.com/diwkuzhxf/image/upload/v1728498939/avatars/y58icrh8ipwidybzav2b.jpg", // Default avatar URL
         }, // This will store the URL of the profile picture
     },
     role: {

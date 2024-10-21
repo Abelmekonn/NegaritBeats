@@ -8,21 +8,22 @@ import UserModel from '../models/User.model.js';
 
 // Fetch user profile by ID
 export const getUserProfile = async (userId) => {
-    const user = await userModel.findById(userId);
+    const user = await redis.get(userId);
+
     if (!user) {
         throw new Error('User not found');
     }
+
+    // Parse the string into a JSON object
+    const userData = JSON.parse(user);
+
     return {
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        isPremium: user.isPremium,
-        likedSongs: user.likedSongs,
-        favoriteSongs: user.favoriteSongs,
-        followingArtists: user.followingArtists,
-        playlists: user.playlists,
+        name: userData.name,
+        email: userData.email,
+        role: userData.role,
     };
 };
+
 
 // Update User Profile Service
 export const updateUserProfile = async (userId, updatedData) => {

@@ -44,12 +44,38 @@ const userSlice = createSlice({
             state.loading = false;
             state.error = action.payload; // Store error message
         },
-        
+        // Load user actions
+        loadUserRequest: (state) => {
+            state.loading = true;
+            state.error = null;
+        },
+        loadUserSuccess: (state, action) => {
+            state.loading = false;
+            state.user = action.payload;
+            state.isAuthenticated = true;
+        },
+        loadUserFailure: (state, action) => {
+            state.loading = false;
+            state.error = action.payload;
+        },
+        // Update access token actions
+        updateAccessTokenRequest: (state) => {
+            state.loading = true;
+            state.error = null;
+        },
+        updateAccessTokenSuccess: (state, action) => {
+            state.loading = false;
+            state.isAuthenticated = true;
+            state.user = action.payload; // Update user after refreshing token
+        },
+        updateAccessTokenFailure: (state, action) => {
+            state.loading = false;
+            state.error = action.payload;
+        },
         // New action to set activation token
         setActivationToken: (state, action) => {
             state.activationToken = action.payload; // Store the activation token
         },
-
         // Activation actions
         activateUserRequest: (state) => {
             state.loading = true;
@@ -96,19 +122,22 @@ const userSlice = createSlice({
             state.error = action.payload; // Store error message
         },
 
-        // Get/Update Profile actions
-        getProfileRequest: (state) => {
+        
+        updateProfileRequest(state) {
             state.loading = true;
-            state.error = null; // Reset error on new request
+            state.error = null;
         },
-        getProfileSuccess: (state, action) => {
+        updateProfileSuccess(state, action) {
             state.loading = false;
-            state.user = action.payload; // Store user profile data
+            state.user = action.payload;
         },
-        getProfileFailure: (state, action) => {
+        updateProfileFail(state, action) {
             state.loading = false;
-            state.error = action.payload; // Store error message
+            state.error = action.payload;
         },
+        resetError(state) {
+            state.error = null;
+        }
     },
 });
 
@@ -120,6 +149,12 @@ export const {
     loginUserRequest,
     loginUserSuccess,
     loginUserFailure,
+    loadUserRequest,
+    loadUserSuccess,
+    loadUserFailure,
+    updateAccessTokenRequest,
+    updateAccessTokenSuccess,
+    updateAccessTokenFailure,
     activateUserRequest,
     activateUserSuccess,
     activateUserFailure,
@@ -129,10 +164,11 @@ export const {
     logoutUserRequest,
     logoutUserSuccess,
     logoutUserFailure,
-    getProfileRequest,
-    getProfileSuccess,
-    getProfileFailure,
     setActivationToken, // Export the action to set activation token
+    updateProfileRequest,
+    updateProfileSuccess,
+    updateProfileFail,
+    resetError
 } = userSlice.actions;
 
 // Export reducer

@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { IoIosSearch } from 'react-icons/io';
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
 
+  // Access user data and login state from Redux store
+  const user = useSelector((state) => state.user.user);
+  const isLoggedIn = useSelector((state) => state.user.isAuthenticated);
+  const userName = user ? user.name : ''; // Get username if user exists
+
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 60) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
+      setIsScrolled(window.scrollY > 60);
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -19,7 +21,7 @@ const Header = () => {
   }, []);
 
   return (
-    <div className={`py-4 w-full z-50  mx-auto bg-zinc-400 rounded-lg bg-opacity-60 transition-all duration-300 ${isScrolled ? 'bg-opacity-70' : ''}`}>
+    <div className={`py-4 w-full z-50 mx-auto bg-zinc-400 rounded-lg bg-opacity-60 transition-all duration-300 ${isScrolled ? 'bg-opacity-70' : ''}`}>
       <div className='flex items-center justify-between px-6 mx-auto'>
         {/* Search Input */}
         <div className='hidden md:block relative'>
@@ -42,25 +44,29 @@ const Header = () => {
           <Link to='/premium' className='text-white text-xl font-medium text-center'>
             Premium
           </Link>
-
         </div>
 
-        {/* Log In Button */}
-        <div className='flex gap-3'>
-          <Link to='/login' className='flex flex-col justify-center'>
-            <button className='px-4 py-2  border border-[#EE10B0] rounded-md'>
-              <p className='text-[#EE10B0] font-medium text-center'>Log In</p>
-            </button>
-          </Link>
+        {/* Log In & Sign Up Buttons - Conditionally Render */}
+        {!isLoggedIn ? (
+          <div className='flex gap-3'>
+            <Link to='/login' className='flex flex-col justify-center'>
+              <button className='px-4 py-2 border border-[#EE10B0] rounded-md'>
+                <p className='text-[#EE10B0] font-medium text-center'>Log In</p>
+              </button>
+            </Link>
 
-          {/* Sign Up Button */}
-          <Link to='/register' className='flex flex-col justify-center'>
-            <button className='px-4 py-2  rounded-md bg-[#EE10B0]'>
-              <p className='text-white font-medium text-center'>Sign Up</p>
-            </button>
-          </Link>
-        </div>
-
+            <Link to='/register' className='flex flex-col justify-center'>
+              <button className='px-4 py-2 rounded-md bg-[#EE10B0]'>
+                <p className='text-white font-medium text-center'>Sign Up</p>
+              </button>
+            </Link>
+          </div>
+        ) : (
+          <div className='flex gap-4 items-center'>
+            <img src={user.avatar.url} alt="" className='w-12 h-12 rounded-full'/>
+            <p className="text-white">Welcome, {userName}!</p> {/* Display the user's name */}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -17,6 +17,7 @@ import {
     getArtistById,
     logoutUser,
     resendOtp,
+    updateAccessToken,
 } from '../controllers/user.controller.js'; // Correct the path
 import { authorizeRoles, isAuthenticated } from '../middleware/auth.middleware.js';
 import {
@@ -41,11 +42,14 @@ userRouter.post('/resend-otp', resendOtp);
 // User login route
 userRouter.post('/login', loginUser);
 
+// update token
+userRouter.post('/update-token', isAuthenticated, updateAccessToken);
+
 // log out
 userRouter.post('/logout', logoutUser)
 
 // Get profile (protected route)
-userRouter.get('/profile', isAuthenticated, getUserProfile);
+userRouter.get('/me', isAuthenticated, getUserProfile);
 
 // Update profile (protected route)
 userRouter.put('/profile/update', isAuthenticated, updateProfile);

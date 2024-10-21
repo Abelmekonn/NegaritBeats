@@ -1,5 +1,6 @@
 import { call, put, takeLatest } from 'redux-saga/effects';
 import axios from 'axios';
+import Cookies from 'js-cookie';
 import { toast } from 'react-hot-toast';
 import {
     registerUserRequest,
@@ -11,9 +12,6 @@ import {
     logoutUserRequest,
     logoutUserSuccess,
     logoutUserFailure,
-    getProfileRequest,
-    getProfileSuccess,
-    getProfileFailure,
     activateUserRequest,
     activateUserSuccess,
     activateUserFailure,
@@ -21,6 +19,15 @@ import {
     resendOtpSuccess,
     resendOtpFailure,
     setActivationToken,
+    updateAccessTokenRequest,
+    updateAccessTokenSuccess,
+    updateAccessTokenFailure,
+    loadUserRequest,
+    loadUserSuccess,
+    loadUserFailure,
+    updateProfileSuccess,
+    updateProfileFail,
+    updateProfileRequest,
 } from '../../features/user/userSlice';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/';
@@ -29,23 +36,41 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/
 const apiRegister = (data) => axios.post(`${API_BASE_URL}users/register`, data);
 const apiLogin = (data) => axios.post(`${API_BASE_URL}users/login`, data);
 const apiLogout = () => axios.post(`${API_BASE_URL}users/logout`);
-const apiGetProfile = () => axios.get(`${API_BASE_URL}users/profile`);
 const apiResendOtp = (data) => axios.post(`${API_BASE_URL}users/resend-otp`, data);
 const apiActivate = (data) => axios.post(`${API_BASE_URL}users/activate`, data);
+const apiUpdateAccessToken = () => axios.post(`${API_BASE_URL}users/update-token`);
+const apiLoadUser = () => {
+    const token = Cookies.get('access_token'); // Get the token from cookies
+    return axios.get(`${API_BASE_URL}users/me`, {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`, // Attach the token in the headers
+        },
+    });
+};
+
+const apiUpdateProfile = (data) => {
+    const token = Cookies.get('access_token'); 
+    return axios.put(`${API_BASE_URL}users/profile/update`, data, {
+        withCredentials: true,
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+};
 
 // Worker saga for user registration
 function* registerUserSaga(action) {
     try {
         const response = yield call(apiRegister, action.payload);
-        const { activationToken } = response.data; // Extract the activationToken
-        console.log(response.data)
-        // Dispatch action to store the activation token
+        const { activationToken } = response.data;
         yield put(setActivationToken(activationToken));
-        yield put(registerUserSuccess()); // Dispatch success action
+        yield put(registerUserSuccess(response.data.user));
         toast.success('Registration successful! Please check your email for the activation link.');
     } catch (error) {
         const message = error.response?.data?.message || 'Registration failed';
-        yield put(registerUserFailure(message)); // Dispatch failure action
+        yield put(registerUserFailure(message));
         toast.error(message);
     }
 }
@@ -54,11 +79,21 @@ function* registerUserSaga(action) {
 function* loginUserSaga(action) {
     try {
         const { data } = yield call(apiLogin, action.payload);
-        yield put(loginUserSuccess(data)); // Dispatch success action with user data
+        const { user, accessToken, refreshToken } = data;
+
+        // Store tokens and user data in cookies/localStorage
+        Cookies.set('access_token', accessToken, { expires: 1 });
+        Cookies.set('refresh_token', refreshToken, { expires: 30 });
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+        Cookies.set('user_data', JSON.stringify(user), { expires: 1 });
+
+        yield put(loginUserSuccess(user));
         toast.success('Login successful!');
+        yield put(loadUserRequest()); // Load user data after login
     } catch (error) {
         const message = error.response?.data?.message || 'Login failed';
-        yield put(loginUserFailure(message)); // Dispatch failure action
+        yield put(loginUserFailure(message));
         toast.error(message);
     }
 }
@@ -66,24 +101,16 @@ function* loginUserSaga(action) {
 // Worker saga for user logout
 function* logoutUserSaga() {
     try {
-        yield call(apiLogout); // Call API for logout
-        yield put(logoutUserSuccess()); // Dispatch success action
+        yield call(apiLogout);
+        Cookies.remove('access_token');
+        Cookies.remove('refresh_token');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        yield put(logoutUserSuccess());
         toast.success('Logout successful!');
     } catch (error) {
         const message = error.response?.data?.message || 'Logout failed';
-        yield put(logoutUserFailure(message)); // Dispatch failure action
-        toast.error(message);
-    }
-}
-
-// Worker saga for getting user profile
-function* getProfileSaga() {
-    try {
-        const { data } = yield call(apiGetProfile); // Call API to get user profile
-        yield put(getProfileSuccess(data)); // Dispatch success action with user profile data
-    } catch (error) {
-        const message = error.response?.data?.message || 'Fetching profile failed';
-        yield put(getProfileFailure(message)); // Dispatch failure action
+        yield put(logoutUserFailure(message));
         toast.error(message);
     }
 }
@@ -92,15 +119,12 @@ function* getProfileSaga() {
 function* activateUserSaga(action) {
     try {
         const { activation_code, activation_token } = action.payload;
-
-        console.log('Activating user with:', { activation_code, activation_token });
-        yield call(apiActivate, { activation_code, activation_token }); // Call API to activate user
-        yield put(activateUserSuccess()); // Dispatch success action
+        yield call(apiActivate, { activation_code, activation_token });
+        yield put(activateUserSuccess());
         toast.success('Account activated successfully!');
     } catch (error) {
-        console.error('Error response:', error.response); // Log the error response
         const message = error.response?.data?.message || 'Activation failed';
-        yield put(activateUserFailure(message)); // Dispatch failure action
+        yield put(activateUserFailure(message));
         toast.error(message);
     }
 }
@@ -108,12 +132,52 @@ function* activateUserSaga(action) {
 // Worker saga for resending OTP
 function* resendOtpSaga(action) {
     try {
-        const { data } = yield call(apiResendOtp, action.payload); // Call API to resend OTP
-        yield put(resendOtpSuccess(data)); // Dispatch success action
+        const { data } = yield call(apiResendOtp, action.payload);
+        yield put(resendOtpSuccess(data));
         toast.success('Activation email has been resent!');
     } catch (error) {
         const message = error.response?.data?.message || 'Resending OTP failed';
-        yield put(resendOtpFailure(message)); // Dispatch failure action
+        yield put(resendOtpFailure(message));
+        toast.error(message);
+    }
+}
+
+// Worker saga for updating access token
+function* updateAccessTokenSaga() {
+    try {
+        const { data } = yield call(apiUpdateAccessToken);
+        Cookies.set('access_token', data.accessToken, { expires: 1 });
+        localStorage.setItem('accessToken', data.accessToken);
+        yield put(updateAccessTokenSuccess(data.user));
+    } catch (error) {
+        const message = error.response?.data?.message || 'Token refresh failed';
+        yield put(updateAccessTokenFailure(message));
+        toast.error(message);
+    }
+}
+
+// Worker saga for loading user data
+function* loadUserSaga() {
+    try {
+        const { data } = yield call(apiLoadUser); // Call the API to load user profile
+        yield put(loadUserSuccess(data.user)); // Store user data in Redux state
+    } catch (error) {
+        const message = error.response?.data?.message || 'Loading user failed';
+        yield put(loadUserFailure(message));
+        toast.error(message);
+    }
+}
+
+// Worker saga for updating user profile
+function* updateProfileSaga(action) {
+    try {
+        const response = yield call(apiUpdateProfile, action.payload);
+        const { user } = response.data;
+        yield put(updateProfileSuccess(user));
+        toast.success('Profile updated successfully!');
+    } catch (error) {
+        const message = error.response?.data?.message || 'Profile update failed';
+        yield put(updateProfileFail(message));
         toast.error(message);
     }
 }
@@ -123,9 +187,11 @@ function* userSaga() {
     yield takeLatest(registerUserRequest.type, registerUserSaga);
     yield takeLatest(loginUserRequest.type, loginUserSaga);
     yield takeLatest(logoutUserRequest.type, logoutUserSaga);
-    yield takeLatest(getProfileRequest.type, getProfileSaga);
     yield takeLatest(activateUserRequest.type, activateUserSaga);
     yield takeLatest(resendOtpRequest.type, resendOtpSaga);
+    yield takeLatest(updateAccessTokenRequest.type, updateAccessTokenSaga);
+    yield takeLatest(loadUserRequest.type, loadUserSaga);
+    yield takeLatest(updateProfileRequest.type, updateProfileSaga);
 }
 
 export default userSaga;

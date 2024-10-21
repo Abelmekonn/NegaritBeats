@@ -30,7 +30,7 @@ const SignUp = () => {
             name: `${values.firstName} ${values.lastName}`,
             email: values.email,
             password: values.password,
-            role: 'defaultRole'
+            role: 'user'
         };
         dispatch(registerUserRequest(userData)); // Dispatch the registration request
         toast.success('Registration successful!');

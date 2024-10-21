@@ -183,8 +183,9 @@ export const logoutUser = catchAsyncError(async (req, res, next) => {
 
 
 export const updateAccessToken = catchAsyncError(async (req, res, next) => {
-    const refreshToken = req.cookies.refresh_token;
+    const refreshToken = req.cookies.refresh_token; // Get the refresh token from cookies
 
+    // Check if the refresh token is available
     if (!refreshToken) {
         return res.status(401).json({
             success: false,
@@ -194,7 +195,8 @@ export const updateAccessToken = catchAsyncError(async (req, res, next) => {
 
     let decoded;
     try {
-        decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN);
+        // Verify the refresh token
+        decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN); // Ensure you use the correct secret
     } catch (error) {
         return res.status(401).json({
             success: false,
@@ -202,6 +204,7 @@ export const updateAccessToken = catchAsyncError(async (req, res, next) => {
         });
     }
 
+    // Fetch the user session from Redis
     const session = await redis.get(decoded.id);
     if (!session) {
         return res.status(401).json({
@@ -210,35 +213,50 @@ export const updateAccessToken = catchAsyncError(async (req, res, next) => {
         });
     }
 
-    const user = JSON.parse(session);
+    const user = JSON.parse(session); // Parse the user session data from Redis
 
+    // Generate a new access token (expires in 15 minutes)
     const accessToken = jwt.sign(
-        { id: user._id },
-        process.env.ACCESS_TOKEN,
-        { expiresIn: 15 * 60 * 1000 } // 15 minutes
+        { id: user._id }, 
+        process.env.ACCESS_TOKEN,  // Ensure this secret is correct
+        { expiresIn: '1d' } // 15 minutes
     );
 
+    // Generate a new refresh token (expires in 7 days)
     const newRefreshToken = jwt.sign(
-        { id: user._id },
-        process.env.REFRESH_TOKEN,
-        { expiresIn: 7 * 24 * 60 * 60 * 1000 } // 7 days
+        { id: user._id }, 
+        process.env.REFRESH_TOKEN,  // Ensure this secret is correct
+        { expiresIn: '7d' } // 7 days
     );
 
-    req.user = user;
+    req.user = user; // Attach the user to the request object
 
-    // Set new tokens
-    res.cookie("access_token", accessToken, { httpOnly: true, sameSite: 'strict', maxAge: 3600000 }); // 1 hour
-    res.cookie("refresh_token", newRefreshToken, { httpOnly: true, sameSite: 'strict', maxAge: 604800000 }); // 7 days
+    // Set new tokens in cookies with appropriate options
+    res.cookie("access_token", accessToken, { 
+        httpOnly: true, 
+        sameSite: 'strict', 
+        maxAge: 1 * 24 * 60 * 60 * 1000,  // 1day
+        secure: process.env.NODE_ENV === 'production' // Only set secure cookies in production
+    });
+    res.cookie("refresh_token", newRefreshToken, { 
+        httpOnly: true, 
+        sameSite: 'strict', 
+        maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days
+        secure: process.env.NODE_ENV === 'production' 
+    });
 
-    await redis.set(user._id, JSON.stringify(user), "EX", 604800); // 7 days expiration
+    // Store the updated session back into Redis with an expiration of 7 days
+    await redis.set(user._id, JSON.stringify(user), "EX", 604800); // 7 days expiration in Redis
 
-    next();
+    res.status(200).json({ success: true, accessToken, refreshToken: newRefreshToken }); // Optionally return new tokens
 });
+
 
 // Get user profile controller
 export const getUserProfile = catchAsyncError(async (req, res, next) => {
-    const userId = req.user.id; // Get user ID from the authenticated user (via JWT token)
-    
+
+    const userId = req.user._id; // Get user ID from the authenticated user (via JWT token)
+    console.log(userId)
     const userProfile = await userService.getUserProfile(userId);
     
     res.status(200).json({

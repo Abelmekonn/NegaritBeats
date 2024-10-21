@@ -20,12 +20,31 @@ const refreshTokenOptions = {
     secure: process.env.NODE_ENV === "production", // true in production, false otherwise
 };
 
+// Send token
 const sendToken = (user, statusCode, res) => {
     const accessToken = user.SignAccessToken();
     const refreshToken = user.SignRefreshToken();
 
-    // Store user session in Redis
-    redis.set(user._id.toString(), JSON.stringify(user), (err) => {
+    // Sanitize the user object by omitting the password
+    const userSession = {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,         // Include avatar
+        createdAt: user.createdAt,   // Include creation date
+        dislikedSongs: user.dislikedSongs,
+        favoriteSongs: user.favoriteSongs,
+        followingArtists: user.followingArtists,
+        isPremium: user.isPremium,
+        likedSongs: user.likedSongs,
+        name: user.name,             // Include name
+        playlists: user.playlists,   // Include playlists
+        __v: user.__v                // Include version if needed
+    };
+
+    // Store sanitized user session in Redis
+    redis.set(user._id.toString(), JSON.stringify(userSession), (err) => {
         if (err) {
             console.error("Error storing session in Redis:", err);
             // Optionally handle the error (e.g., respond with an error message)
@@ -39,11 +58,14 @@ const sendToken = (user, statusCode, res) => {
     // Respond with user data and tokens
     res.status(statusCode).json({
         success: true,
-        user,
+        user: userSession, // Send sanitized user data (excluding password)
         accessToken,
         refreshToken,
     });
 };
+
+
+
 
 // Export the sendToken function as a named export
 export { sendToken };

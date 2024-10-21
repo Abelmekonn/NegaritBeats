@@ -14,7 +14,7 @@ app.use(express.json()); // Parse JSON requests
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded requests
 app.use(cookieParser()); // Parse cookies
 app.use(cors({
-    origin: '*',  // Allow requests from your client URL
+    origin: 'http://localhost:5173',  // Allow requests from your client URL
     credentials: true, // Allow credentials (cookies)
 }));
 
