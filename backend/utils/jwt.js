@@ -6,7 +6,7 @@ dotenv.config(); // Load environment variables
 // Options for cookies
 const accessTokenOptions = {
     expires: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
-    maxAge: 15 * 60 * 1000, // 15 minutes
+    maxAge: 1 * 24 * 60 * 60 * 1000, // 15 minutes
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production", // true in production, false otherwise
@@ -63,9 +63,6 @@ const sendToken = (user, statusCode, res) => {
         refreshToken,
     });
 };
-
-
-
 
 // Export the sendToken function as a named export
 export { sendToken };

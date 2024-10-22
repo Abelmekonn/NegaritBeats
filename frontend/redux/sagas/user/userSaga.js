@@ -41,6 +41,9 @@ const apiActivate = (data) => axios.post(`${API_BASE_URL}users/activate`, data);
 const apiUpdateAccessToken = () => axios.post(`${API_BASE_URL}users/update-token`);
 const apiLoadUser = () => {
     const token = Cookies.get('access_token'); // Get the token from cookies
+    if (!token) {
+        throw new Error('No access token found'); // Handle missing token
+    } // Get the token from cookies
     return axios.get(`${API_BASE_URL}users/me`, {
         headers: {
             'Content-Type': 'application/json',
@@ -75,7 +78,6 @@ function* registerUserSaga(action) {
     }
 }
 
-// Worker saga for user login
 function* loginUserSaga(action) {
     try {
         const { data } = yield call(apiLogin, action.payload);
@@ -92,11 +94,12 @@ function* loginUserSaga(action) {
         toast.success('Login successful!');
         yield put(loadUserRequest()); // Load user data after login
     } catch (error) {
-        const message = error.response?.data?.message || 'Login failed';
+        const message = error.response?.data?.message || 'Login failed. Please check your credentials and try again.';
         yield put(loginUserFailure(message));
         toast.error(message);
     }
 }
+
 
 // Worker saga for user logout
 function* logoutUserSaga() {
@@ -156,17 +159,18 @@ function* updateAccessTokenSaga() {
     }
 }
 
-// Worker saga for loading user data
 function* loadUserSaga() {
     try {
-        const { data } = yield call(apiLoadUser); // Call the API to load user profile
-        yield put(loadUserSuccess(data.user)); // Store user data in Redux state
+        const { data } = yield call(apiLoadUser);
+        yield put(loadUserSuccess(data.user));
     } catch (error) {
+        console.error('Error loading user:', error.response); // Log the full error response
         const message = error.response?.data?.message || 'Loading user failed';
         yield put(loadUserFailure(message));
         toast.error(message);
     }
 }
+
 
 // Worker saga for updating user profile
 function* updateProfileSaga(action) {

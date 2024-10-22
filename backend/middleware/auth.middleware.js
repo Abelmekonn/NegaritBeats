@@ -3,41 +3,45 @@ import catchAsyncError from "./CatchAsyncError.js";
 import { redis } from "../utils/redis.js";
 import { updateAccessToken } from "../controllers/user.controller.js";
 
-
 // Authenticated user
 export const isAuthenticated = catchAsyncError(async (req, res, next) => {
-    const authHeader = req.headers.authorization; // Extract token from Authorization header
-    const accessToken = authHeader && authHeader.split(' ')[1]; // Get the token part (Bearer token)
-
+    const accessToken = req.cookies.access_token;
+    console.log(accessToken)
     if (!accessToken) {
         return res.status(401).json({ success: false, message: "Please login to access this resource" });
     }
 
-    console.log("Access Token:", accessToken); // Log the access token
-
     try {
-        // Verify the access token
-        const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN); // Ensure the secret is loaded
-        console.log("Decoded Token:", decoded); // Log decoded token information
+        // Verify the token
+        const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN); // Corrected to ACCESS_TOKEN_SECRET
 
-        // Check if user exists in Redis
-        const user = await redis.get(decoded._id);
-        if (!user) {
-            return res.status(401).json({ success: false, message: "User not found. Please login to access this resource" });
+        // Check if the token is expired
+        if (decoded.exp && decoded.exp <= Date.now() / 1000) {
+            // Refresh the access token
+            await updateAccessToken(req, res, next);
+            return; // Exit to avoid further processing
         }
 
-        req.user = JSON.parse(user); // Attach user to request
+        // Validate the user from Redis
+        const user = await redis.get(decoded.id);
+
+        if (!user) {
+            return res.status(401).json({ success: false, message: "Please login to access this resource" });
+        }
+
+        req.user = JSON.parse(user);
         next();
     } catch (error) {
-        console.error('Error verifying token:', error.message); // Log the error message
-        // If token has expired, refresh the access token
+        // If token expired error, handle it by refreshing the token
         if (error.name === "TokenExpiredError") {
-            await updateAccessToken(req, res); // Refresh token logic should be handled in this function
+            await updateAccessToken(req, res, next);
         } else {
+            console.error('Error verifying token:', error);
             return res.status(401).json({ success: false, message: "Invalid or expired access token" });
         }
     }
 });
+
 
 // Validate user role
 export const authorizeRoles = (...roles) => {
