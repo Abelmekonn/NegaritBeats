@@ -13,12 +13,25 @@ import { IoIosLogOut } from "react-icons/io";
 import { HiOutlineMenuAlt3 } from "react-icons/hi";
 import { IoMdClose } from "react-icons/io";
 import { Link } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { logoutUserRequest } from '../../../redux/features/user/userSlice';
+import { toast } from 'react-toastify';
+import LogoutModal from '../Common/Logout';
 
 const Sidebar = () => {
     const [isOpen, setIsOpen] = useState(true);
+    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+    const dispatch = useDispatch();
 
     const toggleSidebar = () => {
         setIsOpen(!isOpen);
+    };
+
+    const handleLogout = () => {
+        dispatch(logoutUserRequest());
+        setIsLogoutModalOpen(false);
+        toast.success('Logout successful!');
+        window.location.reload();
     };
 
     const menuItems = [
@@ -29,19 +42,19 @@ const Sidebar = () => {
     ];
 
     const libraryItems = [
-        { icon: <MdReplay size={30}/>, label: 'Recently Added', to: '/recently-added' },
-        { icon: <IoMdTime size={30}/>, label: 'Most Played', to: '/most-played' }
+        { icon: <MdReplay size={30} />, label: 'Recently Added', to: '/recently-added' },
+        { icon: <IoMdTime size={30} />, label: 'Most Played', to: '/most-played' }
     ];
 
     const playlistItems = [
-        { icon: <GrFavorite size={30}/>, label: 'Your Favorites', to: '/favorites' },
-        { icon: <RiPlayListLine size={30}/>, label: 'Your Playlist', to: '/playlist' },
-        { icon: <MdLibraryAdd size={30}/>, label: 'Add Playlist', to: '/add-playlist' }
+        { icon: <GrFavorite size={30} />, label: 'Your Favorites', to: '/favorites' },
+        { icon: <RiPlayListLine size={30} />, label: 'Your Playlist', to: '/playlist' },
+        { icon: <MdLibraryAdd size={30} />, label: 'Add Playlist', to: '/add-playlist' }
     ];
 
     const generalItems = [
-        { icon: <IoSettingsOutline size={30}/>, label: 'Settings', to: '/settings' },
-        { icon: <IoIosLogOut size={30}/>, label: 'Logout', to: '/logout' }
+        { icon: <IoSettingsOutline size={30} />, label: 'Settings', to: '/settings' },
+        { icon: <IoIosLogOut size={30} />, label: 'Logout', onClick: () => setIsLogoutModalOpen(true) }
     ];
 
     return (
@@ -106,7 +119,7 @@ const Sidebar = () => {
                         <p className={`text-[#991272] px-3 ${!isOpen && 'hidden'}`}>General</p>
                         <div className='px-4 flex flex-col gap-6'>
                             {generalItems.map((item, index) => (
-                                <Link key={index} to={item.to} className='flex items-center gap-3 hover:bg-pink-500 rounded-lg hover:scale-105 cursor-pointer py-2 px-3'>
+                                <Link key={index} to={item.to || '#'} onClick={item.onClick} className='flex items-center gap-3 hover:bg-pink-500 rounded-lg hover:scale-105 cursor-pointer py-2 px-3'>
                                     {item.icon}
                                     <span className={`text-xl font-semibold ${!isOpen && 'hidden'}`}>{item.label}</span>
 
@@ -116,8 +129,11 @@ const Sidebar = () => {
                     </div>
                 </div>
             </div>
-
-            
+            <LogoutModal
+                isOpen={isLogoutModalOpen}
+                onClose={() => setIsLogoutModalOpen(false)}
+                onLogout={handleLogout}
+            />
         </>
     );
 };

@@ -9,6 +9,7 @@ const Header = () => {
   // Access user data and login state from Redux store
   const user = useSelector((state) => state.user.user);
   const isLoggedIn = useSelector((state) => state.user.isAuthenticated);
+  console.log(user)
   const userName = user ? user.name : ''; // Get username if user exists
 
   useEffect(() => {
@@ -63,7 +64,7 @@ const Header = () => {
           </div>
         ) : (
           <div className='flex gap-4 items-center'>
-            <img src={user.avatar.url} alt="" className='w-12 h-12 rounded-full'/>
+            <img src={user?.avatar?.url} alt="" className='w-12 h-12 rounded-full'/>
             <p className="text-white">Welcome, {userName}!</p> {/* Display the user's name */}
           </div>
         )}

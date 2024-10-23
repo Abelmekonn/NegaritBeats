@@ -10,14 +10,13 @@ import {
 
 const UserProfile = () => {
     const dispatch = useDispatch();
-    const [username, setUsername] = useState('');
+    const [name, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [avatar, setAvatar] = useState(null);
     const [email, setEmail] = useState(''); // Initial email state
     const user = useSelector((state) => state.user.user);
     const loading = useSelector((state) => state.user.loading); // Access loading state
-    const token = Cookies.get('access_token');
 
     useEffect(() => {
         if (user) {
@@ -53,12 +52,12 @@ const UserProfile = () => {
         }
 
         const formData = new FormData();
-        formData.append('username', username);
+        formData.append('name', name);
         if (password) formData.append('password', password);
         if (avatar) formData.append('avatar', avatar);
 
         // Dispatch the profile update action
-        dispatch(updateProfileRequest(formData, token));
+        dispatch(updateProfileRequest(formData));
     };
 
     return (
@@ -108,7 +107,7 @@ const UserProfile = () => {
                     <input
                         type="text"
                         className="w-full p-2 rounded-lg bg-gray-700 text-white focus:outline-none"
-                        value={username}
+                        value={name}
                         onChange={(e) => setUsername(e.target.value)}
                         placeholder="Enter new username"
                     />

@@ -39,27 +39,22 @@ const apiLogout = () => axios.post(`${API_BASE_URL}users/logout`);
 const apiResendOtp = (data) => axios.post(`${API_BASE_URL}users/resend-otp`, data);
 const apiActivate = (data) => axios.post(`${API_BASE_URL}users/activate`, data);
 const apiUpdateAccessToken = () => axios.post(`${API_BASE_URL}users/update-token`);
+
 const apiLoadUser = () => {
-    const token = Cookies.get('access_token'); // Get the token from cookies
-    if (!token) {
-        throw new Error('No access token found'); // Handle missing token
-    } // Get the token from cookies
     return axios.get(`${API_BASE_URL}users/me`, {
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`, // Attach the token in the headers
         },
+        withCredentials: true,
     });
 };
 
 const apiUpdateProfile = (data) => {
-    const token = Cookies.get('access_token'); 
     return axios.put(`${API_BASE_URL}users/profile/update`, data, {
-        withCredentials: true,
         headers: {
-            'Authorization': `Bearer ${token}`,
             'Content-Type': 'multipart/form-data',
         },
+        withCredentials: true
     });
 };
 
@@ -111,7 +106,8 @@ function* logoutUserSaga() {
         localStorage.removeItem('refreshToken');
         yield put(logoutUserSuccess());
         toast.success('Logout successful!');
-    } catch (error) {
+    } 
+    catch (error) {
         const message = error.response?.data?.message || 'Logout failed';
         yield put(logoutUserFailure(message));
         toast.error(message);

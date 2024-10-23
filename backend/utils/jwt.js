@@ -7,7 +7,7 @@ dotenv.config(); // Load environment variables
 const accessTokenOptions = {
     expires: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
     maxAge: 1 * 24 * 60 * 60 * 1000, // 15 minutes
-    httpOnly: true,
+    httpOnly: false,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production", // true in production, false otherwise
 };
@@ -15,7 +15,7 @@ const accessTokenOptions = {
 const refreshTokenOptions = {
     expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    httpOnly: true,
+    httpOnly: false,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production", // true in production, false otherwise
 };
@@ -32,12 +32,6 @@ const sendToken = (user, statusCode, res) => {
         email: user.email,
         role: user.role,
         avatar: user.avatar,         // Include avatar
-        createdAt: user.createdAt,   // Include creation date
-        dislikedSongs: user.dislikedSongs,
-        favoriteSongs: user.favoriteSongs,
-        followingArtists: user.followingArtists,
-        isPremium: user.isPremium,
-        likedSongs: user.likedSongs,
         name: user.name,             // Include name
         playlists: user.playlists,   // Include playlists
         __v: user.__v                // Include version if needed

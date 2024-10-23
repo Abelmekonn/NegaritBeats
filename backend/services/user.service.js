@@ -21,6 +21,15 @@ export const getUserProfile = async (userId) => {
         name: userData.name,
         email: userData.email,
         role: userData.role,
+        avatar:userData.avatar,
+        createdAt: userData.createdAt,   // Include creation date
+        dislikedSongs: userData.dislikedSongs,
+        favoriteSongs: userData.favoriteSongs,
+        followingArtists: userData.followingArtists,
+        isPremium: userData.isPremium,
+        likedSongs: userData.likedSongs,
+        name: userData.name,             // Include name
+        playlists: userData.playlists,
     };
 };
 

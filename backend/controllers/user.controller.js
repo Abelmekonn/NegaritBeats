@@ -256,7 +256,6 @@ export const updateAccessToken = catchAsyncError(async (req, res, next) => {
 export const getUserProfile = catchAsyncError(async (req, res, next) => {
 
     const userId = req.user._id; // Get user ID from the authenticated user (via JWT token)
-    console.log(userId)
     const userProfile = await userService.getUserProfile(userId);
     
     res.status(200).json({
@@ -269,6 +268,7 @@ export const getUserProfile = catchAsyncError(async (req, res, next) => {
 export const updateProfile = catchAsyncError(async (req, res, next) => {
     try {
         const userId = req.user?._id;
+        console.log(userId)
         const { name, password, avatar } = req.body; // Destructure name, password, and avatar
 
         // Find the user by ID
