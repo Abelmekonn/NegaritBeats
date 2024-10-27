@@ -8,7 +8,6 @@ const Setting = () => {
         <Layout>
             <div className='flex w-full flex-col pt-20 gap-12'>
                 <UserProfile />
-                <SubscriptionPlan />
             </div>
         </Layout>
     )

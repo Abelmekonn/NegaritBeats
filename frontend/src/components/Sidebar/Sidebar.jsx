@@ -12,6 +12,7 @@ import { IoSettingsOutline } from "react-icons/io5";
 import { IoIosLogOut } from "react-icons/io";
 import { HiOutlineMenuAlt3 } from "react-icons/hi";
 import { IoMdClose } from "react-icons/io";
+import { RiCalendarScheduleLine } from "react-icons/ri";
 import { Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { logoutUserRequest } from '../../../redux/features/user/userSlice';
@@ -54,6 +55,7 @@ const Sidebar = () => {
 
     const generalItems = [
         { icon: <IoSettingsOutline size={30} />, label: 'Settings', to: '/settings' },
+        { icon: <RiCalendarScheduleLine size={30} />, label: 'Subscription', to: '/subscription' },
         { icon: <IoIosLogOut size={30} />, label: 'Logout', onClick: () => setIsLogoutModalOpen(true) }
     ];
 

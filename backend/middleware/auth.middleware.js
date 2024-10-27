@@ -6,7 +6,6 @@ import { updateAccessToken } from "../controllers/user.controller.js";
 // Authenticated user
 export const isAuthenticated = catchAsyncError(async (req, res, next) => {
     const accessToken = req.cookies.access_token;
-    
     if (!accessToken) {
         return res.status(401).json({ success: false, message: "Please login to access this resource" });
     }

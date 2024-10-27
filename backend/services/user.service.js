@@ -7,31 +7,61 @@ import UserModel from '../models/User.model.js';
 
 
 // Fetch user profile by ID
+// Fetch user profile by ID with Redis caching
 export const getUserProfile = async (userId) => {
-    const user = await redis.get(userId);
+    try {
+        // Check if user data exists in Redis cache
+        let user = await redis.get(userId);
 
-    if (!user) {
-        throw new Error('User not found');
+        if (user) {
+            // Parse the cached user data from Redis if found
+            const cachedUserData = JSON.parse(user);
+            return {
+                name: cachedUserData.name,
+                email: cachedUserData.email,
+                role: cachedUserData.role,
+                avatar: cachedUserData.avatar,
+                createdAt: cachedUserData.createdAt,
+                dislikedSongs: cachedUserData.dislikedSongs,
+                favoriteSongs: cachedUserData.favoriteSongs,
+                followingArtists: cachedUserData.followingArtists,
+                isPremium: cachedUserData.isPremium,
+                likedSongs: cachedUserData.likedSongs,
+                playlists: cachedUserData.playlists,
+            };
+        }
+
+        // If user data is not in Redis, fetch from MongoDB
+        user = await UserModel.findById(userId);
+        if (!user) {
+            throw new ErrorHandler('User not found', 404);
+        }
+
+        // Structure the user data to be cached
+        const userData = {
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            avatar: user.avatar,
+            createdAt: user.createdAt,
+            dislikedSongs: user.dislikedSongs,
+            favoriteSongs: user.favoriteSongs,
+            followingArtists: user.followingArtists,
+            isPremium: user.isPremium,
+            likedSongs: user.likedSongs,
+            playlists: user.playlists,
+        };
+
+        // Save the user data in Redis with JSON stringified format
+        await redis.set(userId, JSON.stringify(userData));
+
+        return userData;
+
+    } catch (error) {
+        throw new ErrorHandler(error.message || 'Failed to fetch user profile', 500);
     }
-
-    // Parse the string into a JSON object
-    const userData = JSON.parse(user);
-
-    return {
-        name: userData.name,
-        email: userData.email,
-        role: userData.role,
-        avatar:userData.avatar,
-        createdAt: userData.createdAt,   // Include creation date
-        dislikedSongs: userData.dislikedSongs,
-        favoriteSongs: userData.favoriteSongs,
-        followingArtists: userData.followingArtists,
-        isPremium: userData.isPremium,
-        likedSongs: userData.likedSongs,
-        name: userData.name,             // Include name
-        playlists: userData.playlists,
-    };
 };
+
 
 
 // Update User Profile Service

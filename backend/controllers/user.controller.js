@@ -3,14 +3,13 @@ import userModel from '../models/User.model.js'; // Import your user model
 import catchAsyncError from '../middleware/CatchAsyncError.js'; // Async error wrapper
 import sendMail from '../utils/sendMail.js'; // Utility for sending emails
 import { sendToken } from '../utils/jwt.js'; // Utility for sending JWT tokens
-import * as userService from '../services/user.service.js'; 
+import * as userService from '../services/user.service.js';
 import cloudinary from 'cloudinary';
 import { redis } from '../utils/redis.js';
 
-
 // Register user
 export const registrationUser = catchAsyncError(async (req, res, next) => {
-    const { name, email, password  } = req.body; // Default role
+    const { name, email, password } = req.body; // Default role
 
     // Check if the email already exists
     const isEmailExist = await userModel.findOne({ email });
@@ -70,11 +69,11 @@ export const resendOtp = catchAsyncError(async (req, res, next) => {
     }
 
     // Create a new activation token
-    const activationToken = createActivationToken({ 
-        name: user.name, 
-        email: user.email, 
+    const activationToken = createActivationToken({
+        name: user.name,
+        email: user.email,
         password: user.password, // Consider if you want to expose the password here
-        role: user.role 
+        role: user.role
     });
     const activationCode = activationToken.activationCode;
 
@@ -217,14 +216,14 @@ export const updateAccessToken = catchAsyncError(async (req, res, next) => {
 
     // Generate a new access token (expires in 15 minutes)
     const accessToken = jwt.sign(
-        { id: user._id }, 
+        { id: user._id },
         process.env.ACCESS_TOKEN,  // Ensure this secret is correct
         { expiresIn: '1d' } // 15 minutes
     );
 
     // Generate a new refresh token (expires in 7 days)
     const newRefreshToken = jwt.sign(
-        { id: user._id }, 
+        { id: user._id },
         process.env.REFRESH_TOKEN,  // Ensure this secret is correct
         { expiresIn: '7d' } // 7 days
     );
@@ -232,17 +231,17 @@ export const updateAccessToken = catchAsyncError(async (req, res, next) => {
     req.user = user; // Attach the user to the request object
 
     // Set new tokens in cookies with appropriate options
-    res.cookie("access_token", accessToken, { 
-        httpOnly: true, 
-        sameSite: 'strict', 
+    res.cookie("access_token", accessToken, {
+        httpOnly: true,
+        sameSite: 'strict',
         maxAge: 1 * 24 * 60 * 60 * 1000,  // 1day
         secure: process.env.NODE_ENV === 'production' // Only set secure cookies in production
     });
-    res.cookie("refresh_token", newRefreshToken, { 
-        httpOnly: true, 
-        sameSite: 'strict', 
+    res.cookie("refresh_token", newRefreshToken, {
+        httpOnly: true,
+        sameSite: 'strict',
         maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days
-        secure: process.env.NODE_ENV === 'production' 
+        secure: process.env.NODE_ENV === 'production'
     });
 
     // Store the updated session back into Redis with an expiration of 7 days
@@ -257,7 +256,7 @@ export const getUserProfile = catchAsyncError(async (req, res, next) => {
 
     const userId = req.user._id; // Get user ID from the authenticated user (via JWT token)
     const userProfile = await userService.getUserProfile(userId);
-    
+
     res.status(200).json({
         success: true,
         user: userProfile
@@ -268,61 +267,42 @@ export const getUserProfile = catchAsyncError(async (req, res, next) => {
 export const updateProfile = catchAsyncError(async (req, res, next) => {
     try {
         const userId = req.user?._id;
-        console.log(userId)
-        const { name, password, avatar } = req.body; // Destructure name, password, and avatar
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
+        }
 
-        // Find the user by ID
+        // Log req.body to debug
+        const { name, password, avatar } = req.body;
+
         const user = await userModel.findById(userId);
         if (!user) {
             return next(new ErrorHandler("User not found", 404));
         }
 
-        // Update name if provided
-        if (name) {
-            user.name = name;
-        }
+        if (name) user.name = name;
+        if (password) user.password = password; // Hash this if needed
 
-        // Update password if provided
-        if (password) {
-            user.password = password; // Ensure this is hashed before saving
-        }
-
-        // Update avatar if provided
         if (avatar) {
             if (user.avatar?.public_id) {
-                // Destroy the old avatar from Cloudinary
                 await cloudinary.v2.uploader.destroy(user.avatar.public_id);
             }
-
-            // Upload new avatar to Cloudinary
             const myCloud = await cloudinary.v2.uploader.upload(avatar, {
                 folder: "avatars",
                 width: 150,
                 crop: "scale"
             });
-
-            // Update the user's avatar in the database
-            user.avatar = {
-                public_id: myCloud.public_id,
-                url: myCloud.secure_url
-            };
+            user.avatar = { public_id: myCloud.public_id, url: myCloud.secure_url };
         }
 
-        // Save the updated user info to the database
         await user.save();
-
-        // Update the Redis cache with the new user data
         await redis.set(userId, JSON.stringify(user));
 
-        // Send the response
-        res.status(200).json({
-            success: true,
-            user
-        });
+        res.status(200).json({ success: true, user });
     } catch (error) {
         return res.status(400).json({ success: false, message: error.message });
     }
 });
+
 
 
 // follow / un followArtist
@@ -370,7 +350,7 @@ export const unfollowArtist = async (req, res) => {
     );
 
     await user.save();
-    
+
     res.status(200).json({
         success: true,
         message: "Artist unfollowed successfully",

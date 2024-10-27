@@ -52,7 +52,7 @@ const apiLoadUser = () => {
 const apiUpdateProfile = (data) => {
     return axios.put(`${API_BASE_URL}users/profile/update`, data, {
         headers: {
-            'Content-Type': 'multipart/form-data',
+            'Content-Type': 'application/json',
         },
         withCredentials: true
     });
@@ -81,8 +81,8 @@ function* loginUserSaga(action) {
         // Store tokens and user data in cookies/localStorage
         Cookies.set('access_token', accessToken, { expires: 1 });
         Cookies.set('refresh_token', refreshToken, { expires: 30 });
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
+        // localStorage.setItem('accessToken', accessToken);
+        // localStorage.setItem('refreshToken', refreshToken);
         Cookies.set('user_data', JSON.stringify(user), { expires: 1 });
 
         yield put(loginUserSuccess(user));
@@ -100,10 +100,13 @@ function* loginUserSaga(action) {
 function* logoutUserSaga() {
     try {
         yield call(apiLogout);
+        const token=  Cookies.get('access_token');
+        console.log(token)
+
         Cookies.remove('access_token');
         Cookies.remove('refresh_token');
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
+        Cookies.remove('user_data');
+        
         yield put(logoutUserSuccess());
         toast.success('Logout successful!');
     } 

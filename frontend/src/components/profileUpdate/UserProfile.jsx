@@ -3,20 +3,18 @@ import { AiOutlineCamera } from 'react-icons/ai';
 import { useSelector, useDispatch } from 'react-redux';
 import Cookies from 'js-cookie';
 import { toast } from 'react-hot-toast';
-import {
-    updateProfileRequest,
-    updateProfileSuccess,
-} from '../../../redux/features/user/userSlice'; // Import relevant actions
+import { updateProfileRequest } from '../../../redux/features/user/userSlice';
 
 const UserProfile = () => {
     const dispatch = useDispatch();
     const [name, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [avatar, setAvatar] = useState(null);
-    const [email, setEmail] = useState(''); // Initial email state
+    const [avatarBase64, setAvatarBase64] = useState('');
+    const [avatarPreview, setAvatarPreview] = useState(null);
+    const [email, setEmail] = useState('');
     const user = useSelector((state) => state.user.user);
-    const loading = useSelector((state) => state.user.loading); // Access loading state
+    const loading = useSelector((state) => state.user.loading);
 
     useEffect(() => {
         if (user) {
@@ -25,20 +23,16 @@ const UserProfile = () => {
         }
     }, [user]);
 
-    
-
-    // Handle image change
+    // Handle image change and convert to base64
     const imageHandler = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setAvatar(file); // Set file for form submission
-
-            // For preview
             const reader = new FileReader();
             reader.onload = () => {
-                setAvatar({ ...avatar, previewUrl: reader.result });
+                setAvatarBase64(reader.result); // Set base64 image string
+                setAvatarPreview(reader.result); // Update preview
             };
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(file); // Convert image to base64
         }
     };
 
@@ -51,13 +45,14 @@ const UserProfile = () => {
             return;
         }
 
-        const formData = new FormData();
-        formData.append('name', name);
-        if (password) formData.append('password', password);
-        if (avatar) formData.append('avatar', avatar);
+        const data = {
+            name,
+            password: password || "", // Only include password if it exists
+            avatar: avatarBase64 || "", // Only include avatar if it exists
+        };
 
-        // Dispatch the profile update action
-        dispatch(updateProfileRequest(formData));
+        console.log("data", data);
+        dispatch(updateProfileRequest(data)); // Dispatch the JSON payload
     };
 
     return (
@@ -70,7 +65,7 @@ const UserProfile = () => {
                 {/* Avatar Image Section */}
                 <div className="relative w-[120px] h-[120px] mx-auto mb-6">
                     <img
-                        src={avatar?.previewUrl || user?.avatar?.url}
+                        src={avatarPreview || user?.avatar?.url}
                         alt="User Avatar"
                         className="w-[150px] h-[120px] cursor-pointer border-[3px] border-pink-600 rounded-full"
                         width={120}
@@ -139,7 +134,7 @@ const UserProfile = () => {
 
                 <button
                     type="submit"
-                    disabled={loading} // Disable the button during loading
+                    disabled={loading}
                     className={`w-full bg-pink-500 p-3 rounded-lg text-white font-bold transition ${
                         loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-pink-600'
                     }`}

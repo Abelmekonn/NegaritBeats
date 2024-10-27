@@ -19,6 +19,7 @@ import Cookies from 'js-cookie';
 import { useEffect, useState } from 'react';
 import Loader from './components/Loader/Loader';
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute'; // Import the ProtectedRoute component
+import Subscription from './pages/Subscription/Subscription';
 
 function App() {
   const dispatch = useDispatch();
@@ -70,6 +71,8 @@ function App() {
           <Route path="albums" element={<ProtectedRoute><Album /></ProtectedRoute>} />
           <Route path="album/:id" element={<ProtectedRoute><AlbumDetails /></ProtectedRoute>} />
           <Route path="settings" element={<ProtectedRoute><Setting /></ProtectedRoute>} />
+          <Route path="subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
+
         </Routes>
       </MusicPlayerProvider>
     </Provider>

@@ -1,15 +1,17 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import Cookies from 'js-cookie';
 
 const ProtectedRoute = ({ children }) => {
-    const accessToken = localStorage.getItem("accessToken") // Check for the token in cookies
-  if (!accessToken) {
-    // If no token is present, redirect to the login page
-    return <Navigate to="/login" replace />;
-  }
+    const accessToken = Cookies.get("access_token"); // Check for token in cookies
+    const location = useLocation();
 
-  // If authenticated, render the children (protected component)
-  return children;
+    if (!accessToken) {
+        // Redirect to login page, and pass current location in state for post-login redirect
+        return <Navigate to="/login" replace state={{ from: location }} />;
+    }
+
+    // If authenticated, render the children (protected component)
+    return children;
 };
 
 export default ProtectedRoute;
