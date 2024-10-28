@@ -29,7 +29,6 @@ const userSlice = createSlice({
             state.loading = false;
             state.error = action.payload; // Store error message
         },
-
         // Login actions
         loginUserRequest: (state) => {
             state.loading = true;
@@ -92,7 +91,6 @@ const userSlice = createSlice({
             state.loading = false;
             state.error = action.payload; // Store error message
         },
-
         // Resend OTP actions
         resendOtpRequest: (state) => {
             state.loading = true;
@@ -106,7 +104,6 @@ const userSlice = createSlice({
             state.loading = false;
             state.error = action.payload; // Store error message
         },
-
         // Logout actions
         logoutUserRequest: (state) => {
             state.loading = true;
@@ -121,8 +118,21 @@ const userSlice = createSlice({
             state.loading = false;
             state.error = action.payload; // Store error message
         },
-
-        
+        // Token verification actions
+        verifyTokenRequest: (state) => {
+            state.loading = true; // Set loading state
+            state.error = null; // Reset error
+        },
+        verifyTokenSuccess: (state) => {
+            state.loading = false; // Stop loading
+            state.isAuthenticated = true; // User is authenticated
+        },
+        verifyTokenFailure: (state, action) => {
+            state.loading = false; // Stop loading
+            state.isAuthenticated = false; // User is not authenticated
+            state.error = action.payload; // Store error message
+        },
+        // Profile update actions
         updateProfileRequest(state) {
             state.loading = true;
             state.error = null;
@@ -137,7 +147,7 @@ const userSlice = createSlice({
         },
         resetError(state) {
             state.error = null;
-        }
+        },
     },
 });
 
@@ -158,17 +168,20 @@ export const {
     activateUserRequest,
     activateUserSuccess,
     activateUserFailure,
-    resendOtpRequest, // Exporting resend OTP actions
+    resendOtpRequest,
     resendOtpSuccess,
     resendOtpFailure,
     logoutUserRequest,
     logoutUserSuccess,
     logoutUserFailure,
-    setActivationToken, // Export the action to set activation token
+    setActivationToken,
+    verifyTokenRequest,
+    verifyTokenSuccess,
+    verifyTokenFailure,
     updateProfileRequest,
     updateProfileSuccess,
     updateProfileFail,
-    resetError
+    resetError,
 } = userSlice.actions;
 
 // Export reducer

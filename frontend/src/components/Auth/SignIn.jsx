@@ -77,8 +77,6 @@ const SignIn = () => {
                     {loading ? 'Submitting...' : 'Submit'}
                 </button>
 
-                {/* Error message */}
-                {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
                 <p className="text-sm text-gray-400 text-center">
                     Don&apos;t have an account?{' '}

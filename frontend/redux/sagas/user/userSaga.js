@@ -1,6 +1,5 @@
 import { call, put, takeLatest } from 'redux-saga/effects';
 import axios from 'axios';
-import Cookies from 'js-cookie';
 import { toast } from 'react-hot-toast';
 import {
     registerUserRequest,
@@ -28,33 +27,28 @@ import {
     updateProfileSuccess,
     updateProfileFail,
     updateProfileRequest,
+    verifyTokenSuccess,
+    verifyTokenFailure,
+    verifyTokenRequest,
 } from '../../features/user/userSlice';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/';
 
 // API requests
 const apiRegister = (data) => axios.post(`${API_BASE_URL}users/register`, data);
-const apiLogin = (data) => axios.post(`${API_BASE_URL}users/login`, data);
-const apiLogout = () => axios.post(`${API_BASE_URL}users/logout`);
+const apiLogin = (data) => axios.post(`${API_BASE_URL}users/login`, data, { withCredentials: true });
+const apiLogout = () => axios.post(`${API_BASE_URL}users/logout`, {}, { withCredentials: true });
 const apiResendOtp = (data) => axios.post(`${API_BASE_URL}users/resend-otp`, data);
 const apiActivate = (data) => axios.post(`${API_BASE_URL}users/activate`, data);
-const apiUpdateAccessToken = () => axios.post(`${API_BASE_URL}users/update-token`);
-
-const apiLoadUser = () => {
-    return axios.get(`${API_BASE_URL}users/me`, {
+const apiUpdateAccessToken = () => axios.post(`${API_BASE_URL}users/update-token`, {}, { withCredentials: true });
+const apiLoadUser = () => axios.get(`${API_BASE_URL}users/me`, { withCredentials: true });
+const apiUpdateProfile = (data) => axios.put(`${API_BASE_URL}users/profile/update`, data, { withCredentials: true });
+const apiVerifyToken = () => {
+    return axios.get(`${API_BASE_URL}users/check-token`, {
         headers: {
             'Content-Type': 'application/json',
         },
         withCredentials: true,
-    });
-};
-
-const apiUpdateProfile = (data) => {
-    return axios.put(`${API_BASE_URL}users/profile/update`, data, {
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        withCredentials: true
     });
 };
 
@@ -73,18 +67,11 @@ function* registerUserSaga(action) {
     }
 }
 
+// Worker saga for user login
 function* loginUserSaga(action) {
     try {
         const { data } = yield call(apiLogin, action.payload);
-        const { user, accessToken, refreshToken } = data;
-
-        // Store tokens and user data in cookies/localStorage
-        Cookies.set('access_token', accessToken, { expires: 1 });
-        Cookies.set('refresh_token', refreshToken, { expires: 30 });
-        // localStorage.setItem('accessToken', accessToken);
-        // localStorage.setItem('refreshToken', refreshToken);
-        Cookies.set('user_data', JSON.stringify(user), { expires: 1 });
-
+        const { user } = data;
         yield put(loginUserSuccess(user));
         toast.success('Login successful!');
         yield put(loadUserRequest()); // Load user data after login
@@ -95,22 +82,13 @@ function* loginUserSaga(action) {
     }
 }
 
-
 // Worker saga for user logout
 function* logoutUserSaga() {
     try {
         yield call(apiLogout);
-        const token=  Cookies.get('access_token');
-        console.log(token)
-
-        Cookies.remove('access_token');
-        Cookies.remove('refresh_token');
-        Cookies.remove('user_data');
-        
         yield put(logoutUserSuccess());
         toast.success('Logout successful!');
-    } 
-    catch (error) {
+    } catch (error) {
         const message = error.response?.data?.message || 'Logout failed';
         yield put(logoutUserFailure(message));
         toast.error(message);
@@ -144,12 +122,21 @@ function* resendOtpSaga(action) {
     }
 }
 
+// Worker saga for verifying access token
+function* verifyTokenSaga() {
+    try {
+        yield call(apiVerifyToken); // Call the API to verify token
+        yield put(verifyTokenSuccess()); // Dispatch success if token is valid
+    } catch (error) {
+        const message = error.response?.data?.message || 'Token verification failed';
+        yield put(verifyTokenFailure(message)); // Dispatch failure if token is invalid
+    }
+}
+
 // Worker saga for updating access token
 function* updateAccessTokenSaga() {
     try {
         const { data } = yield call(apiUpdateAccessToken);
-        Cookies.set('access_token', data.accessToken, { expires: 1 });
-        localStorage.setItem('accessToken', data.accessToken);
         yield put(updateAccessTokenSuccess(data.user));
     } catch (error) {
         const message = error.response?.data?.message || 'Token refresh failed';
@@ -158,18 +145,17 @@ function* updateAccessTokenSaga() {
     }
 }
 
+// Worker saga for loading user data
 function* loadUserSaga() {
     try {
         const { data } = yield call(apiLoadUser);
         yield put(loadUserSuccess(data.user));
     } catch (error) {
-        console.error('Error loading user:', error.response); // Log the full error response
         const message = error.response?.data?.message || 'Loading user failed';
         yield put(loadUserFailure(message));
         toast.error(message);
     }
 }
-
 
 // Worker saga for updating user profile
 function* updateProfileSaga(action) {
@@ -195,6 +181,7 @@ function* userSaga() {
     yield takeLatest(updateAccessTokenRequest.type, updateAccessTokenSaga);
     yield takeLatest(loadUserRequest.type, loadUserSaga);
     yield takeLatest(updateProfileRequest.type, updateProfileSaga);
+    yield takeLatest(verifyTokenRequest.type, verifyTokenSaga); // Add this line
 }
 
 export default userSaga;

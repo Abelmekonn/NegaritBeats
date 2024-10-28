@@ -167,16 +167,16 @@ export const loginUser = catchAsyncError(async (req, res, next) => {
 // Logout user
 export const logoutUser = catchAsyncError(async (req, res, next) => {
     // Clear the token from the cookie
-    res.cookie("token", null, {
-        expires: new Date(Date.now()), // Immediate expiration
-        httpOnly: true, // Ensures cookie is sent only over HTTP(S), not client-side JavaScript
-        secure: process.env.NODE_ENV === "production", // Only send cookie over HTTPS in production
-        sameSite: "strict", // Ensures cookie is only sent to same site, for security
-    });
+    const userId = req.user._id;
+    console.log(userId)
+    // Remove the user's session from Redis
+    if (req.user) {
+        await redis.del(userId); // Assuming `id` is stored in `req.user`
+    }
 
-    res.status(200).json({
+    return res.status(200).json({
         success: true,
-        message: "Logged out successfully!",
+        message: "Logged out successfully"
     });
 });
 

@@ -46,7 +46,12 @@ userRouter.post('/login', loginUser);
 userRouter.post('/update-token', isAuthenticated, updateAccessToken);
 
 // log out
-userRouter.post('/logout', logoutUser)
+userRouter.post('/logout',isAuthenticated, logoutUser)
+
+//
+userRouter.get('/check-token', isAuthenticated, (req, res) => {
+    res.json({ success: true, message: "You have access to this protected route!" });
+});
 
 // Get profile (protected route)
 userRouter.get('/me', isAuthenticated, getUserProfile);

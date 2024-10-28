@@ -1,16 +1,26 @@
 import { Navigate, useLocation } from 'react-router-dom';
-import Cookies from 'js-cookie';
+import { useDispatch, useSelector } from 'react-redux';
+import { useEffect } from 'react';
+import { verifyTokenRequest } from '../../../redux/features/user/userSlice';
+import Loader from '../Loader/Loader';
 
 const ProtectedRoute = ({ children }) => {
-    const accessToken = Cookies.get("access_token"); // Check for token in cookies
+    const dispatch = useDispatch();
     const location = useLocation();
+    const { isAuthenticated, loading, error } = useSelector((state) => state.user);
 
-    if (!accessToken) {
-        // Redirect to login page, and pass current location in state for post-login redirect
-        return <Navigate to="/login" replace state={{ from: location }} />;
+    useEffect(() => {
+        dispatch(verifyTokenRequest()); // Dispatch the token verification action
+    }, [dispatch]);
+
+    if (loading) {
+        return <div><Loader /></div>; // Show a loading message while verifying
     }
 
-    // If authenticated, render the children (protected component)
+    if (!isAuthenticated) {
+        return <Navigate to="/login" state={{ from: location }} replace />;
+    }
+
     return children;
 };
 

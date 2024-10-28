@@ -3,21 +3,18 @@ import { redis } from '../utils/redis.js';
 
 dotenv.config(); // Load environment variables
 
-// Options for cookies
 const accessTokenOptions = {
-    expires: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
-    maxAge: 1 * 24 * 60 * 60 * 1000, // 15 minutes
-    httpOnly: false,
+    maxAge: 15 * 60 * 1000, // 15 minutes in milliseconds
+    httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production", // true in production, false otherwise
+    secure: process.env.NODE_ENV === "production", // Enable secure cookies in production
 };
 
 const refreshTokenOptions = {
-    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    httpOnly: false,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+    httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production", // true in production, false otherwise
+    secure: process.env.NODE_ENV === "production",
 };
 
 // Send token
@@ -25,7 +22,7 @@ const sendToken = (user, statusCode, res) => {
     const accessToken = user.SignAccessToken();
     const refreshToken = user.SignRefreshToken();
 
-    // Sanitize the user object by omitting the password
+    // Sanitize the user object by omitting sensitive data
     const userSession = {
         _id: user._id,
         username: user.username,
@@ -41,22 +38,22 @@ const sendToken = (user, statusCode, res) => {
     redis.set(user._id.toString(), JSON.stringify(userSession), (err) => {
         if (err) {
             console.error("Error storing session in Redis:", err);
-            // Optionally handle the error (e.g., respond with an error message)
+            return res.status(500).json({ 
+                success: false, 
+                message: "Internal server error - session storage failed" 
+            });
         }
-    });
 
-    // Set cookies
-    res.cookie("access_token", accessToken, accessTokenOptions);
-    res.cookie("refresh_token", refreshToken, refreshTokenOptions);
+        // Set cookies
+        res.cookie("access_token", accessToken, accessTokenOptions);
+        res.cookie("refresh_token", refreshToken, refreshTokenOptions);
 
-    // Respond with user data and tokens
-    res.status(statusCode).json({
-        success: true,
-        user: userSession, // Send sanitized user data (excluding password)
-        accessToken,
-        refreshToken,
+        // Respond with user data and tokens
+        res.status(statusCode).json({
+            success: true,
+            user: userSession, // Send sanitized user data
+        });
     });
 };
 
-// Export the sendToken function as a named export
 export { sendToken };

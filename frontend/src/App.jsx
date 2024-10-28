@@ -18,7 +18,7 @@ import { loadUserRequest, loginUserSuccess } from '../redux/features/user/userSl
 import Cookies from 'js-cookie';
 import { useEffect, useState } from 'react';
 import Loader from './components/Loader/Loader';
-import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute'; // Import the ProtectedRoute component
+import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 import Subscription from './pages/Subscription/Subscription';
 
 function App() {
@@ -28,23 +28,21 @@ function App() {
 
   useEffect(() => {
     setLoading(true);
-
     const timeout = setTimeout(() => {
       setLoading(false);
     }, 1000);
-
     return () => clearTimeout(timeout);
   }, [location.pathname]);
 
   useEffect(() => {
     const initializeApp = () => {
       const userData = Cookies.get('user_data');
-      const accessToken = Cookies.get('access_token');
 
-      if (userData && accessToken) {
+      if (userData) {
         dispatch(loginUserSuccess(JSON.parse(userData)));
-        dispatch(loadUserRequest());
       }
+      // Always call loadUserRequest to fetch the latest user data
+      dispatch(loadUserRequest());
       setLoading(false);
     };
 
@@ -55,24 +53,28 @@ function App() {
     return <Loader />;
   }
 
+  const protectedRoutes = [
+    { path: '/', element: <Home /> },
+    { path: 'discover', element: <Discover /> },
+    { path: 'artists', element: <Artist /> },
+    { path: 'artist/:id', element: <ArtistDetail /> },
+    { path: 'albums', element: <Album /> },
+    { path: 'album/:id', element: <AlbumDetails /> },
+    { path: 'settings', element: <Setting /> },
+    { path: 'subscription', element: <Subscription /> },
+  ];
+
   return (
     <Provider store={store}>
       <MusicPlayerProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path='/register' element={<SignUp />} />
-          <Route path='/activate' element={<Otp />} />
-
-          {/* Wrap all protected routes in ProtectedRoute */}
-          <Route path='/' element={<ProtectedRoute><Home /></ProtectedRoute>} />
-          <Route path="discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
-          <Route path="artists" element={<ProtectedRoute><Artist /></ProtectedRoute>} />
-          <Route path="artist/:id" element={<ProtectedRoute><ArtistDetail /></ProtectedRoute>} />
-          <Route path="albums" element={<ProtectedRoute><Album /></ProtectedRoute>} />
-          <Route path="album/:id" element={<ProtectedRoute><AlbumDetails /></ProtectedRoute>} />
-          <Route path="settings" element={<ProtectedRoute><Setting /></ProtectedRoute>} />
-          <Route path="subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
-
+          <Route path="/register" element={<SignUp />} />
+          <Route path="/activate" element={<Otp />} />
+          
+          {protectedRoutes.map((route) => (
+            <Route key={route.path} path={route.path} element={<ProtectedRoute>{route.element}</ProtectedRoute>} />
+          ))}
         </Routes>
       </MusicPlayerProvider>
     </Provider>
