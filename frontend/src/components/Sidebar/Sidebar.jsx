@@ -3,7 +3,7 @@ import { HiOutlineHome } from 'react-icons/hi';
 import { IoCompassOutline } from 'react-icons/io5';
 import { IoDiscOutline } from 'react-icons/io5';
 import { CiUser } from 'react-icons/ci';
-import { MdReplay } from "react-icons/md";
+import { MdPerson, MdReplay } from "react-icons/md";
 import { IoMdTime } from "react-icons/io";
 import { GrFavorite } from "react-icons/gr";
 import { RiPlayListLine } from "react-icons/ri";
@@ -14,7 +14,7 @@ import { HiOutlineMenuAlt3 } from "react-icons/hi";
 import { IoMdClose } from "react-icons/io";
 import { RiCalendarScheduleLine } from "react-icons/ri";
 import { Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { logoutUserRequest } from '../../../redux/features/user/userSlice';
 import { toast } from 'react-toastify';
 import LogoutModal from '../Common/Logout';
@@ -23,6 +23,8 @@ const Sidebar = () => {
     const [isOpen, setIsOpen] = useState(true);
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
     const dispatch = useDispatch();
+
+    const user = useSelector((state) => state.user.user);
 
     const toggleSidebar = () => {
         setIsOpen(!isOpen);
@@ -58,6 +60,11 @@ const Sidebar = () => {
         { icon: <RiCalendarScheduleLine size={30} />, label: 'Subscription', to: '/subscription' },
         { icon: <IoIosLogOut size={30} />, label: 'Logout', onClick: () => setIsLogoutModalOpen(true) }
     ];
+
+    const artistItems = [
+        { icon: <MdPerson size={30} />, label: 'Artist Profile', to: '/artist-profile' },
+        { icon: <IoIosLogOut size={30} />, label: 'Logout', onClick: () => setIsLogoutModalOpen(true) }
+    ]
 
     return (
         <>
@@ -115,20 +122,34 @@ const Sidebar = () => {
                             ))}
                         </div>
                     </div>
+                    {
+                        user.role === "artist" ? (
+                            <div className='flex flex-col gap-7'>
+                                <p className={`text-[#991272] px-3 ${!isOpen && 'hidden'}`}>Artist</p>
+                                <div className='px-4 flex flex-col gap-6'>
+                                    {artistItems.map((item, index) => (
+                                        <Link key={index} to={item.to || '#'} onClick={item.onClick} className='flex items-center gap-3 hover:bg-pink-500 rounded-lg hover:scale-105 cursor-pointer py-2 px-3'>
+                                            {item.icon}
+                                            <span className={`text-xl font-semibold ${!isOpen && 'hidden'}`}>{item.label}</span>
+                                        </Link>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className='flex flex-col gap-7'>
+                                <p className={`text-[#991272] px-3 ${!isOpen && 'hidden'}`}>General</p>
+                                <div className='px-4 flex flex-col gap-6'>
+                                    {generalItems.map((item, index) => (
+                                        <Link key={index} to={item.to || '#'} onClick={item.onClick} className='flex items-center gap-3 hover:bg-pink-500 rounded-lg hover:scale-105 cursor-pointer py-2 px-3'>
+                                            {item.icon}
+                                            <span className={`text-xl font-semibold ${!isOpen && 'hidden'}`}>{item.label}</span>
 
-                    {/* General Section */}
-                    <div className='flex flex-col gap-7'>
-                        <p className={`text-[#991272] px-3 ${!isOpen && 'hidden'}`}>General</p>
-                        <div className='px-4 flex flex-col gap-6'>
-                            {generalItems.map((item, index) => (
-                                <Link key={index} to={item.to || '#'} onClick={item.onClick} className='flex items-center gap-3 hover:bg-pink-500 rounded-lg hover:scale-105 cursor-pointer py-2 px-3'>
-                                    {item.icon}
-                                    <span className={`text-xl font-semibold ${!isOpen && 'hidden'}`}>{item.label}</span>
-
-                                </Link>
-                            ))}
-                        </div>
-                    </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            </div>
+                        )
+                    }
                 </div>
             </div>
             <LogoutModal
