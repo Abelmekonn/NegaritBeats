@@ -62,7 +62,7 @@ const Sidebar = () => {
     ];
 
     const artistItems = [
-        { icon: <MdPerson size={30} />, label: 'Artist Profile', to: '/artist-profile' },
+        { icon: <MdPerson size={30} />, label: 'Artist Profile', to: '/artist-page' },
         { icon: <IoIosLogOut size={30} />, label: 'Logout', onClick: () => setIsLogoutModalOpen(true) }
     ]
 

@@ -41,7 +41,15 @@ const apiLogout = () => axios.post(`${API_BASE_URL}users/logout`, {}, { withCred
 const apiResendOtp = (data) => axios.post(`${API_BASE_URL}users/resend-otp`, data);
 const apiActivate = (data) => axios.post(`${API_BASE_URL}users/activate`, data);
 const apiUpdateAccessToken = () => axios.post(`${API_BASE_URL}users/update-token`, {}, { withCredentials: true });
-const apiLoadUser = () => axios.get(`${API_BASE_URL}users/me`, { withCredentials: true });
+
+const apiLoadUser = () =>
+    axios.get(`${API_BASE_URL}users/me`, {
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        withCredentials: true,
+    });
+
 const apiUpdateProfile = (data) => axios.put(`${API_BASE_URL}users/profile/update`, data, { withCredentials: true });
 const apiVerifyToken = () => {
     return axios.get(`${API_BASE_URL}users/check-token`, {
@@ -149,6 +157,7 @@ function* updateAccessTokenSaga() {
 function* loadUserSaga() {
     try {
         const { data } = yield call(apiLoadUser);
+        console.log(data)
         yield put(loadUserSuccess(data.user));
     } catch (error) {
         const message = error.response?.data?.message || 'Loading user failed';

@@ -45,7 +45,7 @@ const ArtistDetail = () => {
 
     return (
         <Layout>
-            <div className="flex flex-col pt-20 gap-12">
+            <div className="flex flex-col pt-2 gap-12">
                 <div
                     className="p-6 min-h-[60vh] flex justify-between rounded-2xl bg-cover bg-center px-6 relative"
                     style={{ backgroundImage: `url(${artist.avatar})` }}

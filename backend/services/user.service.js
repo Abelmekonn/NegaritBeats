@@ -7,37 +7,41 @@ import UserModel from '../models/User.model.js';
 
 
 // Fetch user profile by ID
-// Fetch user profile by ID with Redis caching
 export const getUserProfile = async (userId) => {
     try {
         // Check if user data exists in Redis cache
-        let user = await redis.get(userId);
+        let cachedData = await redis.get(userId);
 
-        if (user) {
-            // Parse the cached user data from Redis if found
-            const cachedUserData = JSON.parse(user);
-            return {
-                name: cachedUserData.name,
-                email: cachedUserData.email,
-                role: cachedUserData.role,
-                avatar: cachedUserData.avatar,
-                createdAt: cachedUserData.createdAt,
-                dislikedSongs: cachedUserData.dislikedSongs,
-                favoriteSongs: cachedUserData.favoriteSongs,
-                followingArtists: cachedUserData.followingArtists,
-                isPremium: cachedUserData.isPremium,
-                likedSongs: cachedUserData.likedSongs,
-                playlists: cachedUserData.playlists,
-            };
+        if (cachedData) {
+            cachedData = JSON.parse(cachedData);
+
+            // If the cached user role is artist but lacks artist-specific data, fetch artist data
+            if (cachedData.role === 'artist' && !cachedData.bio) {
+                const artistData = await ArtistModel.findOne({ userId }).lean();
+                if (artistData) {
+                    Object.assign(cachedData, {
+                        bio: artistData.bio,
+                        genres: artistData.genres,
+                        socialLinks: artistData.socialLinks,
+                        albums: artistData.albums,
+                        topTracks: artistData.topTracks,
+                        followers: artistData.followers,
+                        isApproved: artistData.isApproved,
+                    });
+                    // Update the cache with complete artist data
+                    await redis.set(userId, JSON.stringify(cachedData), 'EX', 3600);
+                }
+            }
+            return cachedData;
         }
 
-        // If user data is not in Redis, fetch from MongoDB
-        user = await UserModel.findById(userId);
+        // Fetch from MongoDB if data is not in Redis
+        const user = await UserModel.findById(userId).lean();
         if (!user) {
             throw new ErrorHandler('User not found', 404);
         }
 
-        // Structure the user data to be cached
+        // Structure basic user data
         const userData = {
             name: user.name,
             email: user.email,
@@ -52,8 +56,24 @@ export const getUserProfile = async (userId) => {
             playlists: user.playlists,
         };
 
-        // Save the user data in Redis with JSON stringified format
-        await redis.set(userId, JSON.stringify(userData));
+        // If the user is an artist, fetch and merge artist-specific data
+        if (user.role === 'artist') {
+            const artistData = await ArtistModel.findOne({ userId: user._id }).lean();
+            if (artistData) {
+                Object.assign(userData, {
+                    bio: artistData.bio,
+                    genres: artistData.genres,
+                    socialLinks: artistData.socialLinks,
+                    albums: artistData.albums,
+                    topTracks: artistData.topTracks,
+                    followers: artistData.followers,
+                    isApproved: artistData.isApproved,
+                });
+            }
+        }
+
+        // Cache the complete user data in Redis with an expiration of 1 hour
+        await redis.set(userId, JSON.stringify(userData), 'EX', 3600);
 
         return userData;
 
@@ -61,6 +81,7 @@ export const getUserProfile = async (userId) => {
         throw new ErrorHandler(error.message || 'Failed to fetch user profile', 500);
     }
 };
+
 
 
 

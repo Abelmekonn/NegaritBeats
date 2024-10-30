@@ -1,24 +1,32 @@
 import { configureStore } from '@reduxjs/toolkit';
 import createSagaMiddleware from 'redux-saga';
-import userReducer from './features/user/userSlice'; // Import your user reducer
-import userSaga from './sagas/user/userSaga';       // Import your user saga
+import { persistStore, persistReducer } from 'redux-persist';
+import storage from 'redux-persist/lib/storage';
+import userReducer from './features/user/userSlice';
+import userSaga from './sagas/user/userSaga';
 
-// Create saga middleware
 const sagaMiddleware = createSagaMiddleware();
 
-// Configure the store with saga middleware and user reducer
+const persistConfig = {
+  key: 'root',
+  storage,
+  whitelist: ['user'],
+};
+
+const persistedReducer = persistReducer(persistConfig, userReducer);
+
 const store = configureStore({
-    reducer: {
-        user: userReducer, // Add user reducer
-    },
-    middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware({
-            thunk: false, // Disable redux-thunk
-            serializableCheck: false, // Disabling serializable check (for actions with non-serializable data)
-        }).concat(sagaMiddleware), // Add saga middleware
+  reducer: {
+    user: persistedReducer,
+  },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      thunk: false,
+      serializableCheck: false,
+    }).concat(sagaMiddleware),
 });
 
-// Run the saga middleware
-sagaMiddleware.run(userSaga); // Run the user saga
+sagaMiddleware.run(userSaga);
 
-export default store;
+export const persistor = persistStore(store);
+export default store; // Ensure store is exported as default

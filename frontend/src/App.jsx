@@ -1,15 +1,16 @@
 import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import './App.css';
 import Home from './pages/Home/Home';
 import Discover from './pages/Discover/Discover';
-import Artist from './pages/Artist/Artist';
-import ArtistDetail from './pages/Artist/ArtistDetail';
+import Artist from './pages/Artists/Artist';
+import ArtistDetail from './pages/Artists/ArtistDetail';
 import { MusicPlayerProvider } from './context/MusicPlayerContext';
 import Album from './pages/Album/Album';
 import AlbumDetails from './pages/Album/AlbumDetail';
 import Setting from './pages/Settings/Setting';
-import store from '../redux/store';
+import  store,{ persistor } from '../redux/store';
 import Login from './pages/Auth/Login';
 import SignUp from './components/Auth/SignUp';
 import Otp from './pages/Auth/Otp';
@@ -20,6 +21,7 @@ import { useEffect, useState } from 'react';
 import Loader from './components/Loader/Loader';
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 import Subscription from './pages/Subscription/Subscription';
+import Dashboard from './pages/ArtistDashboard/Dashboard';
 
 function App() {
   const dispatch = useDispatch();
@@ -37,15 +39,12 @@ function App() {
   useEffect(() => {
     const initializeApp = () => {
       const userData = Cookies.get('user_data');
-
       if (userData) {
         dispatch(loginUserSuccess(JSON.parse(userData)));
       }
-      // Always call loadUserRequest to fetch the latest user data
       dispatch(loadUserRequest());
       setLoading(false);
     };
-
     initializeApp();
   }, [dispatch]);
 
@@ -62,21 +61,23 @@ function App() {
     { path: 'album/:id', element: <AlbumDetails /> },
     { path: 'settings', element: <Setting /> },
     { path: 'subscription', element: <Subscription /> },
+    {path : "artist-page" ,element : <Dashboard />}
   ];
 
   return (
     <Provider store={store}>
-      <MusicPlayerProvider>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<SignUp />} />
-          <Route path="/activate" element={<Otp />} />
-          
-          {protectedRoutes.map((route) => (
-            <Route key={route.path} path={route.path} element={<ProtectedRoute>{route.element}</ProtectedRoute>} />
-          ))}
-        </Routes>
-      </MusicPlayerProvider>
+      <PersistGate loading={<Loader />} persistor={persistor}>
+        <MusicPlayerProvider>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<SignUp />} />
+            <Route path="/activate" element={<Otp />} />
+            {protectedRoutes.map((route) => (
+              <Route key={route.path} path={route.path} element={<ProtectedRoute>{route.element}</ProtectedRoute>} />
+            ))}
+          </Routes>
+        </MusicPlayerProvider>
+      </PersistGate>
     </Provider>
   );
 }
