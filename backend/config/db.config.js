@@ -17,7 +17,6 @@ const connectDb = async () => {
     } catch (error) {
         console.error("Database connection error:", error.message);
         console.log("Retrying connection in 5 seconds...");
-
         // Retry connection after 5 seconds
         await setTimeout(5000);
         await connectDb(); // Make sure to await this call
