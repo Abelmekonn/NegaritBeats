@@ -30,7 +30,7 @@ const SongUpload = () => {
         const formData = new FormData();
         formData.append('title', values.title);
         formData.append('genre', values.genre);
-        formData.append('songFile', values.songFile);
+        formData.append('song', values.songFile);
         formData.append('coverImage', values.coverImage);
         formData.append('artistId', user.user._id);
 
