@@ -7,70 +7,75 @@ import { uploadSingleSongToCloudinary } from '../config/cloudinary.config.js';
 import ArtistModel from '../models/Artist.model.js';
 
 
+// Function to upload a single song, along with a cover image, to Cloudinary and update the artist's document
 export const uploadSingleSong = async (req, res, next) => {
     try {
-        const artistId = req.params.artistId; // Get the artist ID from the URL params
-        const { genre, title, coverImage } = req.body; // Extract title, genre, and coverImage from the request body
+        const artistId = req.params.artistId; // Get artist ID from URL params
+        const { genre, title, coverImage } = req.body; // Extract required fields from request body
+        const songFile = req.files.songFile ? req.files.songFile[0] : undefined; // Extract song file if available
 
-        const songFile = req.files.songFile ? req.files.songFile[0] : undefined; // Ensure song file is present
+        // Check for missing fields
+        if (!songFile) return res.status(400).json({ message: 'Song file is missing' });
+        if (!coverImage) return res.status(400).json({ message: 'Cover image data is missing' });
+        if (!title) return res.status(400).json({ message: 'Title is missing' });
+        if (!genre) return res.status(400).json({ message: 'Genre is missing' });
 
-        if (!songFile) {
-            return res.status(400).json({ message: 'Song file is missing' });
-        }
-        if (!coverImage) {
-            return res.status(400).json({ message: 'Cover image data is missing' });
-        }
-        if (!title) {
-            return res.status(400).json({ message: 'Title is missing' });
-        }
-        if (!genre) {
-            return res.status(400).json({ message: 'Genre is missing' });
-        }
-
-        // Upload song file to Cloudinary
+        // Step 1: Upload song file to Cloudinary
         const songCloud = await uploadSingleSongToCloudinary(songFile.path);
 
-        // Decode the base64 image data for the cover image
-        const base64Data = coverImage.replace(/^data:image\/\w+;base64,/, "");
-        const buffer = Buffer.from(base64Data, 'base64');
+        // Step 2: Decode base64 image data for the cover image and upload it
+        const base64Data = coverImage.replace(/^data:image\/\w+;base64,/, ""); // Strip metadata from base64
+        const buffer = Buffer.from(base64Data, 'base64'); // Convert base64 to buffer for Cloudinary upload
 
-        // Upload cover image to Cloudinary
-        cloudinary.uploader.upload_stream({
-            folder: "covers", // Specify folder for cover images
-            resource_type: "image",
-            width: 300,
-            crop: "scale"
-        }, async (error, coverCloud) => {
-            if (error) {
-                console.error('Error uploading cover image:', error);
-                return res.status(500).json({ success: false, message: 'Error uploading cover image', error: error.message });
-            }
+        cloudinary.uploader.upload_stream(
+            {
+                folder: "covers", // Specify Cloudinary folder
+                resource_type: "image",
+                width: 300,
+                crop: "scale",
+            },
+            async (error, coverCloud) => {
+                if (error) {
+                    console.error('Error uploading cover image:', error);
+                    return res.status(500).json({
+                        success: false,
+                        message: 'Error uploading cover image',
+                        error: error.message,
+                    });
+                }
 
-            // Create the song after the cover image has been uploaded
-            const newSong = await createSong(coverCloud, songCloud, title, genre, artistId);
+                // Step 3: Create song record in the database
+                const newSong = await createSong(coverCloud, songCloud, title, genre, artistId);
 
-            if (newSong) {
-                // Find the artist and update their singleSongs array
+                if (!newSong) {
+                    return res.status(500).json({ success: false, message: 'Error creating song' });
+                }
+
+                // Step 4: Find artist and update singleSongs array with the new song ID
                 const artist = await ArtistModel.findById(artistId);
                 if (!artist) {
                     return res.status(404).json({ message: 'Artist not found' });
                 }
 
-                artist.singleSongs.push(newSong._id); // Add the new song ID to the artist's singleSongs array
+                artist.singleSongs.push(newSong._id); // Update artist's singleSongs array
                 await artist.save(); // Save the updated artist document
 
-                // Respond with the new song and updated artist info
-                res.status(201).json({
+                // Response with the new song and updated artist info
+                return res.status(201).json({
                     success: true,
                     song: newSong,
                     artist,
                 });
             }
-        }).end(buffer); // Pass the buffer to Cloudinary for the cover image upload
+        ).end(buffer); // End the stream and pass the buffer for upload
 
     } catch (error) {
         console.error('Error uploading song:', error);
-        return res.status(500).json({ success: false, message: 'Error uploading song', error: error.message });
+        return res.status(500).json({
+            success: false,
+            message: 'Error uploading song',
+            error: error.message,
+        });
     }
 };
 

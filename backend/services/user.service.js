@@ -6,7 +6,6 @@ import { redis } from '../utils/redis.js';
 import UserModel from '../models/User.model.js';
 
 
-// Fetch user profile by ID
 export const getUserProfile = async (userId) => {
     try {
         // Check if user data exists in Redis cache
@@ -20,6 +19,7 @@ export const getUserProfile = async (userId) => {
                 const artistData = await ArtistModel.findOne({ userId }).lean();
                 if (artistData) {
                     Object.assign(cachedData, {
+                        artistId:artistData._id,
                         bio: artistData.bio,
                         genres: artistData.genres,
                         socialLinks: artistData.socialLinks,
@@ -38,7 +38,7 @@ export const getUserProfile = async (userId) => {
         // Fetch from MongoDB if data is not in Redis
         const user = await UserModel.findById(userId).lean();
         if (!user) {
-            throw new ErrorHandler('User not found', 404);
+            throw new Error('User not found');
         }
 
         // Structure basic user data
@@ -78,7 +78,7 @@ export const getUserProfile = async (userId) => {
         return userData;
 
     } catch (error) {
-        throw new ErrorHandler(error.message || 'Failed to fetch user profile', 500);
+        throw new Error(error.message || 'Failed to fetch user profile');
     }
 };
 

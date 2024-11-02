@@ -6,7 +6,7 @@ import { sendToken } from '../utils/jwt.js'; // Utility for sending JWT tokens
 import * as userService from '../services/user.service.js';
 import cloudinary from 'cloudinary';
 import { redis } from '../utils/redis.js';
-
+import ArtistModel from '../models/Artist.model.js';
 // Register user
 export const registrationUser = catchAsyncError(async (req, res, next) => {
     const { name, email, password } = req.body; // Default role
@@ -265,42 +265,71 @@ export const getUserProfile = catchAsyncError(async (req, res, next) => {
 
 
 export const updateProfile = catchAsyncError(async (req, res, next) => {
-    try {
-        const userId = req.user?._id;
-        if (!userId) {
-            return res.status(401).json({ success: false, message: 'Unauthorized' });
-        }
-
-        // Log req.body to debug
-        const { name, password, avatar } = req.body;
-
-        const user = await userModel.findById(userId);
-        if (!user) {
-            return next(new ErrorHandler("User not found", 404));
-        }
-
-        if (name) user.name = name;
-        if (password) user.password = password; // Hash this if needed
-
-        if (avatar) {
-            if (user.avatar?.public_id) {
-                await cloudinary.v2.uploader.destroy(user.avatar.public_id);
-            }
-            const myCloud = await cloudinary.v2.uploader.upload(avatar, {
-                folder: "avatars",
-                width: 150,
-                crop: "scale"
-            });
-            user.avatar = { public_id: myCloud.public_id, url: myCloud.secure_url };
-        }
-
-        await user.save();
-        await redis.set(userId, JSON.stringify(user));
-
-        res.status(200).json({ success: true, user });
-    } catch (error) {
-        return res.status(400).json({ success: false, message: error.message });
+    const userId = req.user?._id;
+    if (!userId) {
+        return next(new ErrorHandler("Unauthorized", 401));
     }
+
+    const { name, password, avatar, bio, socialLinks, genres } = req.body;
+
+    // Find the user in the database
+    const user = await userModel.findById(userId);
+    if (!user) {
+        return next(new ErrorHandler("User not found", 404));
+    }
+
+    // Update general user fields
+    if (name) user.name = name;
+    if (password) user.password = await bcrypt.hash(password, 10); // Hash password
+
+    // Update avatar if provided
+    if (avatar) {
+        if (user.avatar?.public_id) {
+            await cloudinary.v2.uploader.destroy(user.avatar.public_id);
+        }
+        const myCloud = await cloudinary.v2.uploader.upload(avatar, {
+            folder: "avatars",
+            width: 150,
+            crop: "scale"
+        });
+        user.avatar = { public_id: myCloud.public_id, url: myCloud.secure_url };
+    }
+
+    // Save user changes in MongoDB
+    await user.save();
+
+    // Initialize an object to store combined user data
+    let combinedData = { ...user.toObject() };
+
+    // Update artist-specific fields if user is an artist
+    if (user.role === 'artist') {
+        const artist = await ArtistModel.findOne({ userId });
+        if (!artist) {
+            return next(new ErrorHandler("Artist profile not found", 404));
+        }
+
+        if (bio) artist.bio = bio;
+        if (socialLinks) artist.socialLinks = socialLinks;
+        if (genres) artist.genres = genres;
+
+        await artist.save();
+
+        // Merge artist fields into combinedData
+        combinedData = {
+            ...combinedData,
+            bio: artist.bio,
+            socialLinks: artist.socialLinks,
+            genres: artist.genres,
+            albums: artist.albums,
+            followers: artist.followers,
+            isApproved: artist.isApproved
+        };
+    }
+
+    // Save the combined, flattened data into Redis
+    await redis.set(userId, JSON.stringify(combinedData));
+
+    res.status(200).json({ success: true, user: combinedData });
 });
 
 

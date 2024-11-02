@@ -1,10 +1,12 @@
 import React from 'react'
+import Layout from '../../components/Artist-pages/Layout/Layout';
+import Profile from '../../components/Artist-pages/Profile/Profile';
 
 const ArtistProfile = () => {
   return (
-    <div>
-        <h1>Artist Profile</h1>
-    </div>
+    <Layout>
+      <Profile />
+    </Layout>
   )
 }
 

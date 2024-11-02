@@ -1,7 +1,7 @@
 import React from 'react';
-import img from "../../../assets/artist/artist2.jpg";
-import { FaInstagram, FaTwitter, FaSpotify, FaYoutube, FaUserFriends } from "react-icons/fa";
+import { FaInstagram, FaTwitter, FaYoutube, FaUserFriends } from "react-icons/fa";
 import { FaCompactDisc, FaFacebook, FaMusic } from 'react-icons/fa6';
+import { IoMdSettings } from 'react-icons/io';
 
 const ArtistHeader = ({ artist }) => {
     return (
@@ -9,7 +9,7 @@ const ArtistHeader = ({ artist }) => {
             {/* Profile Image */}
             <div className='flex items-center gap-6'>
                 <div className="w-80 h-80 rounded-xl overflow-hidden shadow-lg">
-                    <img src={img} alt="Artist Profile" className="w-full h-full object-cover" />
+                    <img src={artist?.avatar?.url} alt="Artist Profile" className="w-full h-full object-cover" />
                 </div>
 
                 {/* Artist Details */}
@@ -55,8 +55,8 @@ const ArtistHeader = ({ artist }) => {
             </div>
 
             {/* Edit Profile Button */}
-            <button className='text-white self-end mr-3 mb-3 hover:bg-pink-700 transition-all text-lg py-3 px-4 rounded-lg bg-pink-600'>
-                Edit Profile
+            <button className='text-white self-start mr-3 mb-3 hover:text-pink-700 transition-all text-lg py-3 px-4 rounded-lg '>
+                <IoMdSettings size={30} />
             </button>
         </div>
     );
