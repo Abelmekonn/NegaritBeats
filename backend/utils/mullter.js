@@ -15,7 +15,7 @@ const storage = multer.diskStorage({
 const uploadSingle = multer({
     storage,
     limits: { fileSize: 10 * 1024 * 1024 }, // 10MB file size limit per file
-}).single('song'); // Accept a single song
+}).single('songFile'); // Accept a single song
 
 const uploadMultiple = multer({
     storage,

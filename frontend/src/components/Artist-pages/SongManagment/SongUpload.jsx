@@ -26,20 +26,26 @@ const SongUpload = () => {
         coverImage: Yup.mixed().required('Cover image is required'),
     });
 
-    const handleSubmit = (values) => {
+    const fileToBase64 = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = (error) => reject(error);
+        });
+    };
+
+    const handleSubmit = async (values) => {
         const formData = new FormData();
         formData.append('title', values.title);
         formData.append('genre', values.genre);
-        formData.append('song', values.songFile);
-        formData.append('coverImage', values.coverImage);
-        formData.append('artistId', user.user._id);
+        formData.append('songFile', values.songFile); // Assuming this is a file input
+        const coverImageBase64 = await fileToBase64(values.coverImage);
+        formData.append('coverImage', coverImageBase64);
 
-        // Debug: Log FormData entries to check
-        
-        const userId =user.user.artistId
-        console.log(userId)
-        // Dispatch action to upload song
-        dispatch(uploadSongRequest({ artistId: userId, formData }));
+        // Log FormData entries to verify
+        const artistId = user.user.artistId; // Your logic for retrieving artistId
+        dispatch(uploadSongRequest({ artistId, formData })); // Ensure the correct dispatch
     };
 
     const handleCoverImageChange = (event, setFieldValue) => {

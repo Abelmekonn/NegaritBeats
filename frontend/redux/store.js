@@ -6,6 +6,7 @@ import userReducer from './features/user/userSlice';
 import userSaga from './sagas/user/userSaga';
 import songSaga from './sagas/Song/songSaga';
 import { all } from 'redux-saga/effects'; // Import `all`
+import albumSaga from './sagas/Album/albumSaga';
 const sagaMiddleware = createSagaMiddleware();
 
 const persistConfig = {
@@ -32,6 +33,7 @@ function* rootSaga() {
   yield all([
       userSaga(),
       songSaga(), // Add songSaga here
+      albumSaga(),
   ]);
 }
 

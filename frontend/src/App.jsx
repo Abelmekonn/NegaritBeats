@@ -24,6 +24,7 @@ import Subscription from './pages/Subscription/Subscription';
 import Dashboard from './pages/ArtistDashboard/Dashboard';
 import ArtistProfile from './pages/ArtistDashboard/ArtistProfile';
 import CreateSong from './pages/ArtistDashboard/CreateSong';
+import CreateAlbum from './pages/ArtistDashboard/CreateAlbum';
 
 function App() {
   const dispatch = useDispatch();
@@ -65,7 +66,8 @@ function App() {
     { path: 'subscription', element: <Subscription /> },
     {path : "artist" ,element : <Dashboard />},
     {path:"artist/profile" , element: <ArtistProfile />},
-    {path:"/artist/create-song" , element:<CreateSong />}
+    {path:"/artist/create-song" , element:<CreateSong />},
+    {path:"/artist/create-album", element:<CreateAlbum /> },
   ];
 
   return (

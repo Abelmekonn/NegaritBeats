@@ -7,12 +7,13 @@ import { uploadSingleSongToCloudinary } from '../config/cloudinary.config.js';
 import ArtistModel from '../models/Artist.model.js';
 
 
-// Function to upload a single song, along with a cover image, to Cloudinary and update the artist's document
 export const uploadSingleSong = async (req, res, next) => {
     try {
         const artistId = req.params.artistId; // Get artist ID from URL params
         const { genre, title, coverImage } = req.body; // Extract required fields from request body
-        const songFile = req.files.songFile ? req.files.songFile[0] : undefined; // Extract song file if available
+        
+        // Use req.file for a single file upload
+        const songFile = req.file; // This is where the uploaded song file will be
 
         // Check for missing fields
         if (!songFile) return res.status(400).json({ message: 'Song file is missing' });
@@ -78,6 +79,7 @@ export const uploadSingleSong = async (req, res, next) => {
         });
     }
 };
+
 
 // Refactor the createSong function to return the new song
 const createSong = async (coverCloud, songCloud, title, genre, artistId) => {

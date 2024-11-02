@@ -19,12 +19,10 @@ const apiUploadSong = (artistId, formData) => {
 };
 
 function* uploadSongSaga(action) {
-    console.log('Upload Song Action:', action); // Log the action received
+    const { artistId, formData } = action.payload;
+    console.log('Artist ID:', artistId);
+    
     try {
-        const { artistId, formData } = action.payload; 
-        console.log('Artist ID:', artistId);
-        console.log('Form Data:', formData);
-
         const response = yield call(apiUploadSong, artistId, formData);
         yield put(uploadSongSuccess(response.data));
         toast.success('Song uploaded successfully!');
@@ -34,6 +32,8 @@ function* uploadSongSaga(action) {
         toast.error(message);
     }
 }
+
+
 
 
 // Watcher saga
