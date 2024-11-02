@@ -35,10 +35,9 @@ const SongUpload = () => {
         formData.append('artistId', user.user._id);
 
         // Debug: Log FormData entries to check
-        for (let [key, value] of formData.entries()) {
-            console.log(`${key}:`, value);
-        }
+        
         const userId =user.user.artistId
+        console.log(userId)
         // Dispatch action to upload song
         dispatch(uploadSongRequest({ artistId: userId, formData }));
     };
@@ -62,7 +61,7 @@ const SongUpload = () => {
     };
 
     return (
-        <div className="mx-auto p-6 rounded-lg w-[70%]">
+        <div className="mx-auto p-6 rounded-lg">
             <h1 className='text-white text-3xl font-bold mb-6'>
                 Song <span className='text-pink-500'>Upload</span>
             </h1>
@@ -73,7 +72,7 @@ const SongUpload = () => {
             >
                 {({ setFieldValue }) => (
                     <Form className="space-y-6 bg-gray-800 text-white p-6 rounded-xl">
-                        <div className='w-[80%] mx-auto'>
+                        <div className=' mx-auto'>
                             <div>
                                 <label className='text-white font-semibold text-xl block mb-2'>Title</label>
                                 <Field type="text" placeholder="Title" name="title" className="p-2 rounded-lg w-[80%] md:w-[50%] bg-gray-700 text-white focus:outline-none" />
