@@ -101,59 +101,40 @@ const createSong = async (coverCloud, songCloud, title, genre, artistId) => {
 
 export const uploadAlbum = async (req, res, next) => {
     try {
-        const artistId = req.params.artistId; // Get the artist ID from URL params
-        const { title, genre, coverImage, songsDetails } = req.body; // Extract required fields
-        
-        console.log('Request Body:', req.body);
-        console.log('Uploaded Files:', req.files);
+        const artistId = req.params.artistId;
+        console.log('started')
+        const { title, genre, coverImage, songsDetails } = req.body;
+        console.log(songsDetails)
         
         // Validate required fields
-        if (!title) {
-            return res.status(400).json({ message: 'Title is missing' });
-        }
-        if (!genre) {
-            return res.status(400).json({ message: 'Genre is missing' });
-        }
-        if (!coverImage) {
-            return res.status(400).json({ message: 'Cover image data is missing' });
-        }
-        if (!req.files || req.files.length === 0) {
-            return res.status(400).json({ message: 'No songs uploaded' });
-        }
-        if (!songsDetails) {
-            return res.status(400).json({ message: 'Songs details are missing' });
-        }
+        if (!title) return res.status(400).json({ message: 'Title is missing' });
+        if (!genre) return res.status(400).json({ message: 'Genre is missing' });
+        if (!coverImage) return res.status(400).json({ message: 'Cover image data is missing' });
+        if (!req.files || req.files.length === 0) return res.status(400).json({ message: 'No songs uploaded' });
+        if (!songsDetails) return res.status(400).json({ message: 'Songs details are missing' });
 
+        // Parse songsDetails JSON and validate
         let songsData;
         try {
             songsData = JSON.parse(songsDetails);
-            console.log('Number of uploaded songs:', req.files.length);
-            console.log('Number of songs in songsDetails:', songsData.length);
             if (!Array.isArray(songsData) || songsData.length !== req.files.length) {
                 throw new Error('songsDetails should be a JSON array matching the number of songs uploaded');
             }
         } catch (err) {
-            console.error('Error parsing songsDetails:', err);
             return res.status(400).json({ message: 'Invalid JSON string for songsDetails.' });
         }
 
         // Upload cover image to Cloudinary
         const base64Data = coverImage.replace(/^data:image\/\w+;base64,/, "");
         const buffer = Buffer.from(base64Data, 'base64');
-
         const coverCloud = await new Promise((resolve, reject) => {
             cloudinary.uploader.upload_stream({
-                folder: "album_covers", // Specify folder for album covers
+                folder: "album_covers",
                 resource_type: "image",
                 width: 300,
                 crop: "scale"
-            }, (error, result) => {
-                if (error) {
-                    console.error('Error uploading album cover image:', error);
-                    return reject(error);
-                }
-                resolve(result);
-            }).end(buffer);
+            }, (error, result) => error ? reject(error) : resolve(result)
+            ).end(buffer);
         });
 
         // Create the album
@@ -161,7 +142,7 @@ export const uploadAlbum = async (req, res, next) => {
             title,
             artist: artistId,
             genre,
-            coverImageUrl: coverCloud.secure_url, // URL of the uploaded cover image
+            coverImageUrl: coverCloud.secure_url,
         });
 
         // Upload each song and create Song documents
@@ -169,53 +150,32 @@ export const uploadAlbum = async (req, res, next) => {
             const songData = songsData[i];
             const { title: songTitle, genre: songGenre } = songData;
 
-            // Validate song details
-            if (!songTitle || !songGenre) {
-                console.error(`Song at index ${i} is missing title or genre`);
-                throw new Error(`Song at index ${i} is missing title or genre`);
-            }
-
-            // Upload song file to Cloudinary
+            if (!songTitle || !songGenre) throw new Error(`Song at index ${i} is missing title or genre`);
             const songCloud = await uploadSingleSongToCloudinary(songFile.path);
-
-            // Create a Song document
             const newSong = await Song.create({
                 title: songTitle,
                 artist: artistId,
                 genre: songGenre,
-                songUrl: songCloud.secure_url, // URL of the uploaded song
-                coverImageUrl: coverCloud.secure_url, // Use the album cover image for each song
-                album: newAlbum._id, // Associate song with the album
+                songUrl: songCloud.secure_url,
+                coverImageUrl: coverCloud.secure_url,
+                album: newAlbum._id,
             });
 
-            // Cleanup: Delete the uploaded song file from local storage
-            fs.unlink(songFile.path, (err) => {
-                if (err) console.error(`Error deleting file ${songFile.path}:`, err);
-            });
-
-            return newSong; // Return the created song document
+            fs.unlink(songFile.path, (err) => err && console.error(`Error deleting file ${songFile.path}:`, err));
+            return newSong;
         }));
 
-        // Update the album with the uploaded song IDs
+        // Link songs to the album and save
         newAlbum.songs = uploadedSongs.map(song => song._id);
         await newAlbum.save();
 
-        // Find and update the artist's albums array
+        // Update the artist's albums array
         const artist = await ArtistModel.findById(artistId);
-        if (!artist) {
-            return res.status(404).json({ message: 'Artist not found' });
-        }
-        artist.albums.push(newAlbum._id); // Add the new album ID to the artist's albums array
+        if (!artist) return res.status(404).json({ message: 'Artist not found' });
+        artist.albums.push(newAlbum._id);
         await artist.save();
 
-        // Send the final response with the album and associated songs
-        res.status(201).json({
-            success: true,
-            album: newAlbum,
-            songs: uploadedSongs,
-            artist
-        });
-
+        res.status(201).json({ success: true, album: newAlbum, songs: uploadedSongs, artist });
     } catch (error) {
         console.error('Error uploading album:', error);
         return res.status(500).json({ success: false, message: 'Error uploading album', error: error.message });

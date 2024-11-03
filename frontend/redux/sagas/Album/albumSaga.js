@@ -21,6 +21,7 @@ const apiUploadAlbum = (artistId, formData) => {
 function* uploadAlbumSaga(action) {
     const { artistId, formData } = action.payload;
     console.log('Artist ID:', artistId);
+    console.log('FormData:', Array.from(formData.entries())); 
 
     try {
         const response = yield call(apiUploadAlbum, artistId, formData);
@@ -29,6 +30,7 @@ function* uploadAlbumSaga(action) {
     } catch (error) {
         const message = error.response?.data?.message || 'Failed to upload album';
         yield put(uploadAlbumFailure(message));
+        console.error("Error details:", error.response.data);
         toast.error(message);
     }
 }
