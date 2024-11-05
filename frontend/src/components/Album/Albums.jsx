@@ -205,16 +205,25 @@ const thStyle = css`
     padding: 10px;
     text-align: left;
     font-size: 20px;
+    @media (max-width: 640px) {
+        font-size: 16px;
+    }
 `;
 
 const tdStyle = css`
     color: white;
     padding: 10px;
+    @media (max-width: 640px) {
+        font-size: 14px;
+    }
 `;
 
 const tdHasta = css`
     font-size: 22px;
     color: white;
+    @media (max-width: 640px) {
+        font-size: 18px;
+    }
 `;
 
 const rowStyle = css`
@@ -228,6 +237,23 @@ const coverContainerStyle = css`
 
 const detailsContainerStyle = css`
     margin-left: 10px;
+
+    .title {
+        font-size: 18px;
+
+        @media (max-width: 640px) {
+            font-size: 14px;
+        }
+    }
+
+    .artist {
+        font-size: 16px;
+        color: gray;
+
+        @media (max-width: 640px) {
+            font-size: 12px;
+        }
+    }
 `;
 
 const durationContainerStyle = css`

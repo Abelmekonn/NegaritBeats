@@ -113,7 +113,7 @@ const AlbumUpload = () => {
                 onSubmit={handleSubmit}
             >
                 {({ setFieldValue }) => (
-                    <Form className="space-y-6 bg-gray-800 text-white p-6 rounded-xl">
+                    <Form className="space-y-6 bg-gray-800 text-white p-10 rounded-xl">
                         <div>
                             <label className='text-white font-semibold text-xl block mb-2'>Album Title</label>
                             <Field
@@ -141,7 +141,7 @@ const AlbumUpload = () => {
                                 type="file"
                                 accept="audio/*"
                                 multiple
-                                className="hidden"
+                                className="hidden  w-[300px] h-48"
                                 onChange={handleSongFilesChange}
                                 id="song-files"
                             />
@@ -158,20 +158,20 @@ const AlbumUpload = () => {
                                 <div className="mt-4">
                                     <h2 className='text-white font-semibold'>Uploaded Songs:</h2>
                                     {songFiles.map((_, index) => (
-                                        <div key={index} className="flex items-center mt-2">
+                                        <div key={index} className="flex flex-wrap gap-3 items-center  mt-10">
                                             <input
                                                 type="text"
                                                 placeholder="Song Title"
                                                 value={songDetails[index].title}
                                                 onChange={(e) => updateSongDetail(index, 'title', e.target.value)}
-                                                className="p-1 rounded-lg bg-gray-700 text-white mr-2"
+                                                className="p-3 rounded-lg bg-gray-700 text-white mr-2"
                                             />
                                             <input
                                                 type="text"
                                                 placeholder="Genre"
                                                 value={songDetails[index].genre}
                                                 onChange={(e) => updateSongDetail(index, 'genre', e.target.value)}
-                                                className="p-1 rounded-lg bg-gray-700 text-white mr-2"
+                                                className="p-3 rounded-lg bg-gray-700 text-white mr-2"
                                             />
                                             <audio controls src={URL.createObjectURL(songFiles[index])} className="mr-2" />
                                             <button
@@ -221,9 +221,9 @@ const AlbumUpload = () => {
                         </div>
 
                         {uploading ? (
-                            <div className="text-yellow-500">Uploading...</div>
+                            <div className="bg-pink-950 w-full text-white rounded px-4 py-2 mt-10">Uploading...</div>
                         ) : (
-                            <button type="submit" className="bg-blue-500 text-white rounded px-4 py-2 mt-6">
+                            <button type="submit" className="bg-pink-600 w-full text-white rounded px-4 py-2 mt-10">
                                 Upload Album
                             </button>
                         )}

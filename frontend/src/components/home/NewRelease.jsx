@@ -50,7 +50,7 @@ const NewRelease = () => {
                 New Release <span className='text-pink-500'>Songs</span>
             </h1>
             <div>
-                <div className='grid grid-cols-6 gap-4 mt-7'>
+                <div className='grid md:grid-cols-6 grid-cols-3 gap-4 mt-7'>
                     {songs.map((song, index) => (
                         <div key={index} className='bg-[#333] p-2 rounded-lg relative group'>
                             <img src={song.cover} alt={song.title} className='w-full h-40 object-cover rounded-lg' />

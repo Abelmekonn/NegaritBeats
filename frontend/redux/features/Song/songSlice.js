@@ -29,6 +29,18 @@ const songSlice = createSlice({
             state.uploadSuccess = false;
             state.uploadError = null;
         },
+        fetchSongsStart: (state) => {
+            state.loading = true;
+            state.error = null;
+        },
+        fetchSongsSuccess: (state, action) => {
+            state.songs = action.payload;
+            state.loading = false;
+        },
+        fetchSongsFailure: (state, action) => {
+            state.error = action.payload;
+            state.loading = false;
+        },
     },
 });
 
@@ -38,6 +50,10 @@ export const {
     uploadSongSuccess,
     uploadSongFailure,
     resetUploadState, // Export reset action if needed
+    fetchSongsStart,
+    fetchSongsSuccess,
+    fetchSongsFailure,
+    fetchAlbumsStart,
 } = songSlice.actions;
 
 // Export the reducer

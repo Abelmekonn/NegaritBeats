@@ -8,8 +8,10 @@ const Layout = ({ children }) => {
     return (
         <div className='flex h-screen'>
             <Sidebar />
-            <div className='pt-5 px-5 relative overflow-y-auto h-screen w-screen overflow-x-hidden '>
-                <Header />
+            <div className='pt-5  md:px-5 relative overflow-y-auto h-screen w-screen overflow-x-hidden '>
+                <div className=''>
+                    <Header />
+                </div>
                 <div className="content">
                     {children} {/* This will render the dynamic content */}
                 </div>

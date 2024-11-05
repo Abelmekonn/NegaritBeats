@@ -6,9 +6,12 @@ import {
     uploadSongRequest,
     uploadSongSuccess,
     uploadSongFailure,
+    fetchSongsStart,
+    fetchSongsSuccess,
+    fetchSongsFailure
 } from '../../features/Song/songSlice';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/';
 
 // API request for uploading a song
 const apiUploadSong = (artistId, formData) => {
@@ -17,6 +20,9 @@ const apiUploadSong = (artistId, formData) => {
         withCredentials: true,
     });
 };
+
+// API request for fetching all songs
+const apiFetchSongs = () => axios.get(`${API_BASE_URL}songs`, { withCredentials: true });
 
 function* uploadSongSaga(action) {
     const { artistId, formData } = action.payload;
@@ -33,12 +39,21 @@ function* uploadSongSaga(action) {
     }
 }
 
-
-
+function* fetchSongsSaga() {
+    try {
+        const response = yield call(apiFetchSongs);
+        yield put(fetchSongsSuccess(response.data));
+    } catch (error) {
+        const message = error.response?.data?.message || 'Failed to fetch songs';
+        yield put(fetchSongsFailure(message));
+        toast.error(message);
+    }
+}
 
 // Watcher saga
 function* songSaga() {
     yield takeLatest(uploadSongRequest.type, uploadSongSaga);
+    yield takeLatest(fetchSongsStart.type, fetchSongsSaga);
 }
 
 export default songSaga;

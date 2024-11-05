@@ -7,6 +7,7 @@ import * as userService from '../services/user.service.js';
 import cloudinary from 'cloudinary';
 import { redis } from '../utils/redis.js';
 import ArtistModel from '../models/Artist.model.js';
+
 // Register user
 export const registrationUser = catchAsyncError(async (req, res, next) => {
     const { name, email, password } = req.body; // Default role
@@ -99,7 +100,6 @@ export const resendOtp = catchAsyncError(async (req, res, next) => {
     }
 });
 
-
 // Activate user
 export const activateUser = catchAsyncError(async (req, res, next) => {
     const { activation_token, activation_code } = req.body;
@@ -137,7 +137,6 @@ export const activateUser = catchAsyncError(async (req, res, next) => {
         message: "User activated successfully!",
     });
 });
-
 
 // Login user
 export const loginUser = catchAsyncError(async (req, res, next) => {
@@ -179,7 +178,6 @@ export const logoutUser = catchAsyncError(async (req, res, next) => {
         message: "Logged out successfully"
     });
 });
-
 
 export const updateAccessToken = catchAsyncError(async (req, res, next) => {
     const refreshToken = req.cookies.refresh_token; // Get the refresh token from cookies
@@ -249,7 +247,6 @@ export const updateAccessToken = catchAsyncError(async (req, res, next) => {
 
     res.status(200).json({ success: true, accessToken, refreshToken: newRefreshToken }); // Optionally return new tokens
 });
-
 
 // Get user profile controller
 export const getUserProfile = catchAsyncError(async (req, res, next) => {
@@ -331,8 +328,6 @@ export const updateProfile = catchAsyncError(async (req, res, next) => {
 
     res.status(200).json({ success: true, user: combinedData });
 });
-
-
 
 // follow / un followArtist
 export const getAllFollowedArtists = async (req, res) => {

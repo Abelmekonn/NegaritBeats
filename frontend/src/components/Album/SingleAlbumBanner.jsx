@@ -16,8 +16,8 @@ const SingleAlbumBanner = ({ cover, name, artist, totalSongs }) => {
                     {/* Add onClick to go back when the arrow is clicked */}
                     <FaArrowLeft size={30} className="cursor-pointer" onClick={() => navigate(-1)} />
                 </div>
-                <div className="relative h-full w-full justify-between flex self-end items-center z-10">
-                    <div className='flex gap-5'>
+                <div className="relative h-full w-full md:justify-between space-y-6 flex flex-col md:flex-row self-end items-center z-10">
+                    <div className='flex gap-16 justify-between '>
                         <div className='text-white'>
                             <h1 className="text-3xl font-bold ">{name}</h1>
                             <h3 className='text-2xl font-medium'>By : {artist}</h3>

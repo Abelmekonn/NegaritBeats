@@ -2,6 +2,7 @@ import React from 'react';
 import { FaInstagram, FaTwitter, FaYoutube, FaUserFriends } from "react-icons/fa";
 import { FaCompactDisc, FaFacebook, FaMusic } from 'react-icons/fa6';
 import { IoMdSettings } from 'react-icons/io';
+import { Link } from 'react-router-dom';
 
 const ArtistHeader = ({ artist }) => {
     return (
@@ -55,9 +56,10 @@ const ArtistHeader = ({ artist }) => {
             </div>
 
             {/* Edit Profile Button */}
-            <button className='text-white self-start mr-3 mb-3 hover:text-pink-700 transition-all text-lg py-3 px-4 rounded-lg '>
-                <IoMdSettings size={30} />
-            </button>
+            <Link to="/artist/profile" className='text-white self-start mr-3 mb-3 hover:text-pink-700 transition-all text-xl py-3 px-4 rounded-l flex items-center'>
+                <IoMdSettings size={30} className="mr-2" />
+                Edit Profile
+            </Link>
         </div>
     );
 };

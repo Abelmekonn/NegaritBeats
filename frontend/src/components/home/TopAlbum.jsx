@@ -52,7 +52,7 @@ const TopAlbum = () => {
                 Top <span className='text-pink-500'>Albums</span>
             </h1>
             <div>
-                <div className='grid grid-cols-6 gap-4 mt-7'>
+                <div className='grid md:grid-cols-6 grid-cols-3 gap-4 mt-7'>
                     {songs.map((song, index) => (
                         <div key={index} className='bg-[#333] p-2 rounded-lg'>
                             <img src={song.coverImg} alt={song.title} className='w-full h-40 object-cover rounded-lg' />

@@ -5,6 +5,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import Song from '../models/Song.model.js';
 import { uploadSingleSongToCloudinary } from '../config/cloudinary.config.js';
 import ArtistModel from '../models/Artist.model.js';
+import { redis } from '../utils/redis.js';
 
 
 export const uploadSingleSong = async (req, res, next) => {
@@ -79,7 +80,6 @@ export const uploadSingleSong = async (req, res, next) => {
         });
     }
 };
-
 
 // Refactor the createSong function to return the new song
 const createSong = async (coverCloud, songCloud, title, genre, artistId) => {
@@ -181,3 +181,58 @@ export const uploadAlbum = async (req, res, next) => {
         return res.status(500).json({ success: false, message: 'Error uploading album', error: error.message });
     }
 }
+
+export const getAllSongs = async (req, res, next) => {
+    try {
+        // Check if the data exists in Redis cache
+        const cachedSongs = await redis.get('allSongs');
+        
+        if (cachedSongs) {
+            // If cached data exists, parse and return it
+            return res.status(200).json({ success: true, songs: JSON.parse(cachedSongs) });
+        }
+
+        // Fetch all songs from the database if not in cache
+        const songs = await Song.find().populate('artist', 'name').populate('album', 'title');
+
+        // Store the fetched data in Redis with an expiration time (e.g., 1 hour)
+        await redis.set('allSongs', JSON.stringify(songs), 'EX', 3600); // 3600 seconds = 1 hour
+
+        // Return the songs in the response
+        res.status(200).json({ success: true, songs });
+    } catch (error) {
+        console.error('Error fetching songs:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error fetching songs',
+            error: error.message,
+        });
+    }
+};
+export const getAllAlbums = async (req, res, next) => {
+    try {
+        // Check if the data exists in Redis cache
+        const cachedSongs = await redis.get('allAlbums');
+        
+        if (cachedSongs) {
+            // If cached data exists, parse and return it
+            return res.status(200).json({ success: true, songs: JSON.parse(cachedSongs) });
+        }
+
+        // Fetch all songs from the database if not in cache
+        const songs = await Album.find()
+
+        // Store the fetched data in Redis with an expiration time (e.g., 1 hour)
+        await redis.set('allAlbums', JSON.stringify(songs), 'EX', 3600); // 3600 seconds = 1 hour
+
+        // Return the songs in the response
+        res.status(200).json({ success: true, songs });
+    } catch (error) {
+        console.error('Error fetching songs:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error fetching songs',
+            error: error.message,
+        });
+    }
+};

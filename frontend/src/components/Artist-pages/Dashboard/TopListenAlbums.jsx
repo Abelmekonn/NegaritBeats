@@ -122,7 +122,7 @@ const TopListenAlbum = () => {
                 <h1 className='text-white text-3xl font-bold'>
                     Top Listen <span className='text-pink-500'>Albums</span>
                 </h1>
-                <Link to="/upload-album" className='text-white flex gap-2 items-center self-end mr-3 mb-3 hover:bg-pink-700 transition-all text-lg py-3 px-4 rounded-lg bg-pink-600'>
+                <Link to="/artist/create-album" className='text-white flex gap-2 items-center self-end mr-3 mb-3 hover:bg-pink-700 transition-all text-lg py-3 px-4 rounded-lg bg-pink-600'>
                 <MdCloudUpload size={20} />Upload Album
                 </Link>
             </div>

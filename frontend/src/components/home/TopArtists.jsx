@@ -41,7 +41,7 @@ const TopArtists = () => {
             <h1 className='text-white text-3xl font-bold'>
                 Popular <span className='text-pink-500'>Artists</span>
             </h1>
-            <div className='grid grid-cols-7 gap-3 mt-7'>
+            <div className='grid md:grid-cols-7 grid-cols-2  md:gap-3 mt-7'>
                 {artists.map((artist, index) => (
                     <div key={index} className=' rounded-lg text-center'>
                         <img

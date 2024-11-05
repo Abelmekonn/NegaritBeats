@@ -11,7 +11,7 @@ import cover6 from '../../assets/cover/cover6.jpg';
 import { GrFavorite } from "react-icons/gr";
 import { IoAdd } from 'react-icons/io5';
 import { FaPlay } from "react-icons/fa";
-import MusicPlayerContext  from '../../context/MusicPlayerContext'; // Import the context
+import MusicPlayerContext  from '../../context/MusicPlayerContext';
 
 const songs = [
     {
@@ -78,7 +78,7 @@ const songs = [
 
 const tableStyle = css`
     width: 100%;
-    border-collapse: collapse; /* Ensures that there are no gaps between cells */
+    border-collapse: collapse;
     margin-top: 20px;
 `;
 
@@ -86,21 +86,33 @@ const thStyle = css`
     color: white;
     padding: 10px;
     text-align: left;
-    font-size: 20px; /* Set font size to 18px */
+    font-size: 20px;
+
+    @media (max-width: 640px) {
+        font-size: 16px;
+    }
 `;
 
 const tdStyle = css`
     color: white;
     padding: 10px;
+
+    @media (max-width: 640px) {
+        font-size: 14px;
+    }
 `;
 
 const tdHasta = css`
-    font-size: 22px; /* Set font size to 18px */
+    font-size: 22px;
     color: white;
-`
+
+    @media (max-width: 640px) {
+        font-size: 18px;
+    }
+`;
 
 const rowStyle = css`
-    margin: 10px 0; /* Margin for top and bottom of the row */
+    margin: 10px 0;
 `;
 
 const coverContainerStyle = css`
@@ -109,19 +121,36 @@ const coverContainerStyle = css`
 `;
 
 const detailsContainerStyle = css`
-    margin-left: 10px; /* Adds some space between cover and text */
+    margin-left: 10px;
+
+    .title {
+        font-size: 18px;
+
+        @media (max-width: 640px) {
+            font-size: 14px;
+        }
+    }
+
+    .artist {
+        font-size: 16px;
+        color: gray;
+
+        @media (max-width: 640px) {
+            font-size: 12px;
+        }
+    }
 `;
 
 const durationContainerStyle = css`
     display: flex;
     align-items: center;
-    gap: 5px; /* Adds space between the icon and duration text */
+    gap: 5px;
 `;
 
 const TrendingSongs = () => {
-    const { playTrack } = useContext(MusicPlayerContext); // Access playTrack from context
+    const { playTrack } = useContext(MusicPlayerContext);
     return (
-        <div >
+        <div>
             <h1 className='text-white text-3xl font-bold'>
                 Trending <span className='text-pink-500'>Songs</span>
             </h1>
@@ -131,7 +160,6 @@ const TrendingSongs = () => {
                         <th css={thStyle}></th>
                         <th css={thStyle}></th>
                         <th css={thStyle}>Release Date</th>
-                        <th css={thStyle}>Album</th>
                         <th css={thStyle}>Duration</th>
                     </tr>
                 </thead>
@@ -144,19 +172,18 @@ const TrendingSongs = () => {
                                     <img src={song.cover} className='rounded-lg' alt={song.title} style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
                                     <div
                                         className='text-pink-600 absolute  p-4 bg-[#00000080] rounded-full cursor-pointer  items-center justify-center'
-                                        onClick={() => playTrack(song)} // Pass the song to the player context
+                                        onClick={() => playTrack(song)}
                                     >
                                         <FaPlay size={20} />
                                     </div>
                                     <div css={detailsContainerStyle}>
-                                        <div className='text-lg font-medium'>{song.title}</div>
-                                        <div className='text-md text-gray-400'>{song.artist}</div>
+                                        <div className='title'>{song.title}</div>
+                                        <div className='artist'>{song.artist}</div>
                                     </div>
                                 </div>
                             </td>
                             <td css={tdStyle}>{song.releaseDate}</td>
-                            <td css={tdStyle}>{song.album}</td>
-                            <td css={tdStyle} >
+                            <td css={tdStyle}>
                                 <div css={durationContainerStyle}>
                                     <GrFavorite className='text-pink-600' />
                                     <span>{song.duration}</span>

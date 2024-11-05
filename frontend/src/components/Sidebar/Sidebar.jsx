@@ -1,29 +1,21 @@
-import React, { useState } from 'react';
-import { HiOutlineHome } from 'react-icons/hi';
-import { IoCompassOutline } from 'react-icons/io5';
-import { IoDiscOutline } from 'react-icons/io5';
+import React, { useState, useEffect } from 'react';
+import { HiOutlineHome, HiOutlineMenuAlt3 } from 'react-icons/hi';
+import { IoCompassOutline, IoDiscOutline,  IoSettingsOutline } from 'react-icons/io5';
 import { CiUser } from 'react-icons/ci';
-import { MdPerson, MdReplay } from "react-icons/md";
-import { IoMdTime } from "react-icons/io";
-import { GrFavorite } from "react-icons/gr";
-import { RiPlayListLine } from "react-icons/ri";
-import { MdLibraryAdd } from "react-icons/md";
-import { IoSettingsOutline } from "react-icons/io5";
-import { IoIosLogOut } from "react-icons/io";
-import { HiOutlineMenuAlt3 } from "react-icons/hi";
-import { IoMdClose } from "react-icons/io";
-import { RiCalendarScheduleLine } from "react-icons/ri";
+import { MdPerson, MdReplay, MdLibraryAdd } from "react-icons/md";
+import { GrClose, GrFavorite } from "react-icons/gr";
+import { RiPlayListLine, RiCalendarScheduleLine } from "react-icons/ri";
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logoutUserRequest } from '../../../redux/features/user/userSlice';
 import { toast } from 'react-toastify';
 import LogoutModal from '../Common/Logout';
+import { IoIosLogOut, IoMdTime } from 'react-icons/io';
 
 const Sidebar = () => {
     const [isOpen, setIsOpen] = useState(true);
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
     const dispatch = useDispatch();
-
     const user = useSelector((state) => state.user.user);
 
     const toggleSidebar = () => {
@@ -36,6 +28,24 @@ const Sidebar = () => {
         toast.success('Logout successful!');
         window.location.reload();
     };
+
+    // Detect screen size changes
+    useEffect(() => {
+        const mediaQuery = window.matchMedia('(max-width: 768px)'); // Change width as needed
+        const handleMediaQueryChange = (e) => {
+            if (e.matches) {
+                setIsOpen(false); // Close sidebar on small screens
+            } else {
+                setIsOpen(true); // Open sidebar on larger screens
+            }
+        };
+
+        // Set initial state based on current screen size
+        handleMediaQueryChange(mediaQuery);
+        mediaQuery.addListener(handleMediaQueryChange);
+
+        return () => mediaQuery.removeListener(handleMediaQueryChange);
+    }, []);
 
     const menuItems = [
         { icon: <HiOutlineHome size={30} />, label: 'Home', to: '/' },
@@ -64,19 +74,19 @@ const Sidebar = () => {
     const artistItems = [
         { icon: <MdPerson size={30} />, label: 'Artist Profile', to: '/artist' },
         { icon: <IoIosLogOut size={30} />, label: 'Logout', onClick: () => setIsLogoutModalOpen(true) }
-    ]
+    ];
 
     return (
         <>
             {/* Toggle Button - Always Visible */}
-            <div className={`absolute    ${isOpen ? "left-52 top-4" : "w-20 bg-gray-900 flex justify-center top-0 left-0 py-2"} z-50`}>
+            <div className={`absolute ${isOpen ? "left-52 top-4" : "w-20 bg-gray-900 flex justify-center top-0 left-0 py-2"} z-50`}>
                 <button onClick={toggleSidebar}>
-                    {isOpen ? <IoMdClose size={30} className="text-white" /> : <HiOutlineMenuAlt3 size={30} className="text-white" />}
+                    {isOpen ? <GrClose size={30} className="text-white" /> : <HiOutlineMenuAlt3 size={30} className="text-white" />}
                 </button>
             </div>
 
             {/* Sidebar */}
-            <div className={`relative sidebar-scrollbar inset-y-0 left-0 transform ${isOpen ? "translate-x-0 w-80" : "w-30 pt-14"} transition-all duration-300 ease-in-out bg-gray-900 text-white py-8 overflow-y-auto z-40`}>
+            <div className={`sm:absolute md:relative sidebar-scrollbar inset-y-0 left-0 transform ${isOpen ? "translate-x-0 w-80" : "w-30 pt-14"} transition-all duration-300 ease-in-out bg-gray-900 text-white py-8 overflow-y-auto z-40`}>
                 <div className={`py-2 text-3xl text-center font-bold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent mb-5 ${!isOpen && "hidden"}`}>
                     NegaritBeats
                 </div>
@@ -103,7 +113,6 @@ const Sidebar = () => {
                                 <Link key={index} to={item.to} className='flex items-center gap-3 hover:bg-pink-500 rounded-lg hover:scale-105 cursor-pointer py-2 px-3'>
                                     {item.icon}
                                     <span className={`text-xl font-semibold ${!isOpen && 'hidden'}`}>{item.label}</span>
-
                                 </Link>
                             ))}
                         </div>
@@ -117,11 +126,11 @@ const Sidebar = () => {
                                 <Link key={index} to={item.to} className='flex items-center gap-3 hover:bg-pink-500 rounded-lg hover:scale-105 cursor-pointer py-2 px-3'>
                                     {item.icon}
                                     <span className={`text-xl font-semibold ${!isOpen && 'hidden'}`}>{item.label}</span>
-
                                 </Link>
                             ))}
                         </div>
                     </div>
+
                     {
                         user.role === "artist" ? (
                             <div className='flex flex-col gap-7'>
@@ -143,7 +152,6 @@ const Sidebar = () => {
                                         <Link key={index} to={item.to || '#'} onClick={item.onClick} className='flex items-center gap-3 hover:bg-pink-500 rounded-lg hover:scale-105 cursor-pointer py-2 px-3'>
                                             {item.icon}
                                             <span className={`text-xl font-semibold ${!isOpen && 'hidden'}`}>{item.label}</span>
-
                                         </Link>
                                     ))}
                                 </div>
@@ -152,11 +160,9 @@ const Sidebar = () => {
                     }
                 </div>
             </div>
-            <LogoutModal
-                isOpen={isLogoutModalOpen}
-                onClose={() => setIsLogoutModalOpen(false)}
-                onLogout={handleLogout}
-            />
+
+            {/* Logout Modal */}
+            <LogoutModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} onLogout={handleLogout} />
         </>
     );
 };

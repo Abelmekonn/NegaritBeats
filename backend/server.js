@@ -17,7 +17,7 @@ cloudinary.config({
 connectDb();
 
 // Start the server
-const PORT = process.env.PORT || 5000; // Fallback to port 5000 if PORT is not set
+const PORT = process.env.PORT || 8000; // Fallback to port 5000 if PORT is not set
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
