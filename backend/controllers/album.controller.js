@@ -6,6 +6,7 @@ import Song from '../models/Song.model.js';
 import { uploadSingleSongToCloudinary } from '../config/cloudinary.config.js';
 import ArtistModel from '../models/Artist.model.js';
 import { redis } from '../utils/redis.js';
+import UserModel from '../models/User.model.js';
 
 
 export const uploadSingleSong = async (req, res, next) => {
@@ -209,29 +210,82 @@ export const getAllSongs = async (req, res, next) => {
         });
     }
 };
+
 export const getAllAlbums = async (req, res, next) => {
     try {
         // Check if the data exists in Redis cache
-        const cachedSongs = await redis.get('allAlbums');
+        const cachedAlbums = await redis.get('allAlbums');
         
-        if (cachedSongs) {
+        if (cachedAlbums) {
             // If cached data exists, parse and return it
-            return res.status(200).json({ success: true, songs: JSON.parse(cachedSongs) });
+            return res.status(200).json({ success: true, albums: JSON.parse(cachedAlbums) });
         }
 
-        // Fetch all songs from the database if not in cache
-        const songs = await Album.find()
+        // Fetch all albums from the database if not in cache
+        const albums = await Album.find();
 
+        // Manually populate the artist and user data
+        const albumDetails = await Promise.all(albums.map(async (album) => {
+            const artist = await ArtistModel.findById(album.artist);
+            const user = await UserModel.findById(artist.userId);
+            return {
+                ...album.toObject(), // Convert album to a plain object
+                artist: {
+                    _id: artist._id,
+                    name: artist.name,
+                    user: {
+                        _id: user._id,
+                        name: user.name,
+                        email: user.email, // Accessing the user's email
+                    },
+                },
+            };
+        }));
+        
         // Store the fetched data in Redis with an expiration time (e.g., 1 hour)
-        await redis.set('allAlbums', JSON.stringify(songs), 'EX', 3600); // 3600 seconds = 1 hour
+        await redis.set('allAlbums', JSON.stringify(albumDetails), 'EX', 3600); // 3600 seconds = 1 hour
 
-        // Return the songs in the response
-        res.status(200).json({ success: true, songs });
+        // Return the albums in the response
+        res.status(200).json({ success: true, albums: albumDetails });
     } catch (error) {
-        console.error('Error fetching songs:', error);
+        console.error('Error fetching albums:', error);
         return res.status(500).json({
             success: false,
-            message: 'Error fetching songs',
+            message: 'Error fetching albums',
+            error: error.message,
+        });
+    }
+};
+
+export const getAlbumById = async (req, res, next) => {
+    const { id } = req.params;
+
+    try {
+        // Check if the album data exists in Redis cache
+        const cachedAlbum = await redis.get(`album:${id}`);
+        
+        if (cachedAlbum) {
+            // If cached data exists, parse and return it
+            return res.status(200).json({ success: true, album: JSON.parse(cachedAlbum) });
+        }
+
+        // Fetch the album from the database if not in cache
+        const album = await Album.findById(id);
+        
+        if (!album) {
+            return res.status(404).json({ success: false, message: 'Album not found' });
+        }
+
+        // Store the fetched album in Redis with an expiration time (e.g., 1 hour)
+        await redis.set(`album:${id}`, JSON.stringify(album), 'EX', 3600); // 3600 seconds = 1 hour
+
+        // Return the album in the response
+        res.status(200).json({ success: true, album });
+    } catch (error) {
+        console.error('Error fetching album:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error fetching album',
             error: error.message,
         });
     }

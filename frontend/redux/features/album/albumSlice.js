@@ -29,6 +29,30 @@ const albumSlice = createSlice({
             state.uploadSuccess = false;
             state.uploadError = null;
         },
+        fetchAlbumsStart: (state) => {
+            state.loading = true;
+            state.error = null;
+        },
+        fetchAlbumsSuccess: (state, action) => {
+            state.albums = action.payload;
+            state.loading = false;
+        },
+        fetchAlbumsFailure: (state, action) => {
+            state.error = action.payload;
+            state.loading = false;
+        },
+        fetchAlbumByIdRequest: (state) => {
+            state.loading = true;
+            state.error = null;
+        },
+        fetchAlbumByIdSuccess: (state, action) => {
+            state.album = action.payload;
+            state.loading = false;
+        },
+        fetchAlbumByIdFailure: (state, action) => {
+            state.loading = false;
+            state.error = action.payload;
+        },
     },
 });
 
@@ -37,7 +61,13 @@ export const {
     uploadAlbumRequest,
     uploadAlbumSuccess,
     uploadAlbumFailure,
-    resetUploadState, // Export reset action if needed
+    resetUploadState, 
+    fetchAlbumsStart,
+    fetchAlbumsSuccess,
+    fetchAlbumsFailure,
+    fetchAlbumByIdRequest,
+    fetchAlbumByIdSuccess,
+    fetchAlbumByIdFailure,
 } = albumSlice.actions;
 
 // Export the reducer

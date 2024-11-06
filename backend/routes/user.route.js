@@ -27,7 +27,7 @@ import {
     getAllPlaylists,
     removeSongFromPlaylist,
 } from '../controllers/playlist.controller.js';
-import { getAllAlbums, getAllSongs } from '../controllers/album.controller.js';
+import { getAlbumById, getAllAlbums, getAllSongs } from '../controllers/album.controller.js';
 
 const userRouter = express.Router();
 
@@ -61,12 +61,13 @@ userRouter.get('/me', isAuthenticated, getUserProfile);
 userRouter.put('/profile/update', isAuthenticated, updateProfile);
 
 // songs
-userRouter.get('/all-songs', getAllSongs);
+userRouter.get('/songs', getAllSongs);
 
 // All Albums
-userRouter.get('/all-albums', getAllAlbums)
+userRouter.get('/albums', getAllAlbums)
 
-
+// single album
+userRouter.get(`/albums/:id`,getAlbumById)
 
 // Follow / Unfollow Artists
 userRouter.get('/followed-artists', isAuthenticated, getAllFollowedArtists); // Get followed artists

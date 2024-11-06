@@ -22,7 +22,7 @@ const apiUploadSong = (artistId, formData) => {
 };
 
 // API request for fetching all songs
-const apiFetchSongs = () => axios.get(`${API_BASE_URL}songs`, { withCredentials: true });
+const apiFetchSongs = () => axios.get(`${API_BASE_URL}users/songs`, { withCredentials: true });
 
 function* uploadSongSaga(action) {
     const { artistId, formData } = action.payload;

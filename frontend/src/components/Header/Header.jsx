@@ -22,8 +22,8 @@ const Header = () => {
   }, []);
 
   return (
-    <div className={`py-4 fixed  z-50 mx-auto bg-zinc-400 rounded-lg bg-opacity-60 transition-all duration-300 ${isScrolled ? 'bg-opacity-70' : ''}`}>
-      <div className='flex items-center gap-10 justify-between px-6 mx-auto'>
+    <div className={`py-4 fixed z-50 mx-auto ml-10 bg-zinc-400 rounded-lg bg-opacity-60 transition-all duration-300 ${isScrolled ? 'bg-opacity-70' : ''}`}>
+      <div className='flex items-center gap-28 justify-between px-6 mx-auto'>
         {/* Search Input */}
         <div className='hidden md:block relative'>
           <IoIosSearch className='rotate-90 absolute bottom-[10px] left-2 text-gray-50' size={24} />
