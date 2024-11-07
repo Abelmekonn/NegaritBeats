@@ -58,7 +58,6 @@ const SignUp = () => {
                         </p>
                         <span className='text-3xl text-center font-bold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent'>NegaritBeats</span>
                         <p className="text-sm text-gray-400 text-center">Signup now and get full access to our app.</p>
-
                         <div className="flex gap-2">
                             <label className="flex-1 relative">
                                 <Field

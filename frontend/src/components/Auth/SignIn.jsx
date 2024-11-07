@@ -27,7 +27,7 @@ const SignIn = () => {
         <div className="h-screen flex items-center justify-center bg-[#181818]">
             <form
                 onSubmit={handleSubmit} // Form submission handler
-                className="flex flex-col gap-4 max-w-md p-6 rounded-2xl bg-[#1a1a1a] w-[50%] text-white border border-gray-700"
+                className="flex flex-col gap-4 max-w-md p-6 rounded-2xl bg-[#1a1a1a] w-[80%] md:w-[50%] text-white border border-gray-700"
             >
                 <p className="text-2xl font-semibold text-[#00bfff] relative flex items-center pl-8">
                     Login

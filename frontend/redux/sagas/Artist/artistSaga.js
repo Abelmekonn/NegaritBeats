@@ -1,0 +1,64 @@
+// artistSaga.js
+import { call, put, takeLatest } from 'redux-saga/effects';
+import axios from 'axios';
+import {
+    createArtistRequest,
+    createArtistSuccess,
+    createArtistFailure,
+    fetchArtistsRequest,
+    fetchArtistsSuccess,
+    fetchArtistsFailure,
+    fetchArtistByIdRequest,
+    fetchArtistByIdSuccess,
+    fetchArtistByIdFailure,
+} from '../../features/artist/artistSlice';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/';
+
+// API calls
+const apiCreateArtist = (data) => axios.post(`${API_BASE_URL}artist/create-profile`, data);
+const apiFetchArtists = () => axios.get(`${API_BASE_URL}users/all-artists`);
+const apiFetchArtistById = (id) => axios.get(`${API_BASE_URL}users/artist-detail/${id}`);
+
+// Worker saga for creating an artist
+function* createArtistSaga(action) {
+    try {
+        const response = yield call(apiCreateArtist, action.payload);
+        yield put(createArtistSuccess(response.data));
+    } catch (error) {
+        const message = error.response?.data?.message || 'Failed to create artist';
+        yield put(createArtistFailure(message));
+    }
+}
+
+// Worker saga for fetching all artists
+function* fetchArtistsSaga() {
+    try {
+        const response = yield call(apiFetchArtists);
+        console.log(response.data)
+        yield put(fetchArtistsSuccess(response.data));
+    } catch (error) {
+        const message = error.response?.data?.message || 'Failed to fetch artists';
+        yield put(fetchArtistsFailure(message));
+    }
+}
+
+// Worker saga for fetching artist by ID
+function* fetchArtistByIdSaga(action) {
+    try {
+        const response = yield call(apiFetchArtistById, action.payload);
+        yield put(fetchArtistByIdSuccess(response.data));
+    } catch (error) {
+        const message = error.response?.data?.message || 'Failed to fetch artist by ID';
+        yield put(fetchArtistByIdFailure(message));
+    }
+}
+
+// Watcher saga
+function* artistSaga() {
+    yield takeLatest(createArtistRequest.type, createArtistSaga);
+    yield takeLatest(fetchArtistsRequest.type, fetchArtistsSaga);
+    yield takeLatest(fetchArtistByIdRequest.type, fetchArtistByIdSaga);
+}
+
+export default artistSaga;

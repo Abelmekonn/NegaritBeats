@@ -90,7 +90,7 @@ userRouter.post('/playlists/add-song', isAuthenticated, addSongToPlaylist); // A
 userRouter.post('/playlists/remove-song', isAuthenticated, removeSongFromPlaylist); // Remove a song from a playlist
 userRouter.delete('/playlists', isAuthenticated, deletePlaylist); // Delete a playlist
 
-userRouter.get('/all-artists', isAuthenticated, authorizeRoles("artist", "user", "admin"), fetchAllArtists);
+userRouter.get('/all-artists', fetchAllArtists);
 
 userRouter.get('/artist-detail/:artistId',isAuthenticated, authorizeRoles("artist", "user", "admin"),getArtistById)
 

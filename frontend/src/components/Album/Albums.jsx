@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { fetchAlbumsStart } from "../../../redux/features/album/albumSlice";
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import Loader from '../Loader/Loader';
 
 const tableStyle = css`
     width: 100%;
@@ -84,7 +85,7 @@ const Albums = () => {
         dispatch(fetchAlbumsStart());
     }, [dispatch]);
 
-    if (loading) return <p>Loading...</p>;
+    if (loading) return <p><Loader /></p>;
     if (error) return <p>Error: {error}</p>;
 
     return (
@@ -108,7 +109,7 @@ const Albums = () => {
                             <td css={tdHasta}>#{index + 1}</td>
                             <td css={tdStyle}>
                                 <div css={coverContainerStyle} className='relative'>
-                                    <Link to={`/album/${album.id}`}>
+                                    <Link to={`/album/${album._id}`}>
                                         <img src={album.coverImageUrl} className='rounded-lg' alt={album.title} style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
                                     </Link>
                                     <div css={detailsContainerStyle}>

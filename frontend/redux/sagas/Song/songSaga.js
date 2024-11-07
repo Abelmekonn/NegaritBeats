@@ -42,6 +42,7 @@ function* uploadSongSaga(action) {
 function* fetchSongsSaga() {
     try {
         const response = yield call(apiFetchSongs);
+        console.log(response)
         yield put(fetchSongsSuccess(response.data));
     } catch (error) {
         const message = error.response?.data?.message || 'Failed to fetch songs';

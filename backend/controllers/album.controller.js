@@ -189,27 +189,49 @@ export const getAllSongs = async (req, res, next) => {
         const cachedSongs = await redis.get('allSongs');
         
         if (cachedSongs) {
-            // If cached data exists, parse and return it
             return res.status(200).json({ success: true, songs: JSON.parse(cachedSongs) });
         }
 
-        // Fetch all songs from the database if not in cache
-        const songs = await Song.find().populate('artist', 'name').populate('album', 'title');
+        const songs = await Song.find();
+
+        // Manually populate the artist and album details
+        const songDetails = await Promise.all(songs.map(async (song) => {
+            const artist = await ArtistModel.findById(song.artist._id);
+            let user = null;
+
+            if (artist) {
+                user = await UserModel.findById(artist.userId);
+            }
+
+            return {
+                ...song.toObject(),
+                artist: artist ? {
+                    _id: artist._id,
+                    name: artist.name,
+                    user: user ? {
+                        _id: user._id,
+                        name: user.name,
+                        email: user.email,
+                    } : null,
+                } : null,
+            };
+        }));
 
         // Store the fetched data in Redis with an expiration time (e.g., 1 hour)
-        await redis.set('allSongs', JSON.stringify(songs), 'EX', 3600); // 3600 seconds = 1 hour
+        await redis.set('allSongs', JSON.stringify(songDetails), 'EX', 3600);
 
-        // Return the songs in the response
-        res.status(200).json({ success: true, songs });
+        res.status(200).json({ success: true, songs: songDetails });
     } catch (error) {
         console.error('Error fetching songs:', error);
-        return res.status(500).json({
+        res.status(500).json({
             success: false,
             message: 'Error fetching songs',
             error: error.message,
         });
     }
 };
+
+
 
 export const getAllAlbums = async (req, res, next) => {
     try {

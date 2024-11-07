@@ -1,80 +1,12 @@
-/* eslint-disable react/no-unknown-property */
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
-import React, { useContext } from 'react';
-import cover1 from '../../assets/cover/cover1.jpg';
-import cover2 from '../../assets/cover/cover2.jpg';
-import cover3 from '../../assets/cover/cover3.jpg';
-import cover4 from '../../assets/cover/cover4.jpg';
-import cover5 from '../../assets/cover/cover5.jpg';
-import cover6 from '../../assets/cover/cover6.jpg';
+import React, { useContext, useEffect } from 'react';
 import { GrFavorite } from "react-icons/gr";
 import { IoAdd } from 'react-icons/io5';
 import { FaPlay } from "react-icons/fa";
-import MusicPlayerContext  from '../../context/MusicPlayerContext';
-
-const songs = [
-    {
-        id: 1,
-        title: "Night Sky Dreams",
-        artist: "Luna",
-        cover: cover1,
-        album: "Starlight",
-        duration: "3:45",
-        genre: "Pop",
-        releaseDate: "Nov 4, 2023"
-    },
-    {
-        id: 2,
-        title: "Electric Waves",
-        artist: "Zephyr",
-        cover: cover2,
-        album: "Ocean Breeze",
-        duration: "4:12",
-        genre: "Electro",
-        releaseDate: "Oct 21, 2023"
-    },
-    {
-        id: 3,
-        title: "Midnight Escape",
-        artist: "Nova",
-        cover: cover3,
-        album: "Dark Horizons",
-        duration: "3:33",
-        genre: "R&B",
-        releaseDate: "Sep 15, 2023"
-    },
-    {
-        id: 4,
-        title: "City Lights",
-        artist: "Neon",
-        cover: cover4,
-        album: "Urban Soul",
-        duration: "4:01",
-        genre: "Hip-Hop",
-        releaseDate: "Aug 28, 2023"
-    },
-    {
-        id: 5,
-        title: "Golden Hour",
-        artist: "Aurora",
-        cover: cover5,
-        album: "Sunset Vibes",
-        duration: "2:58",
-        genre: "Indie",
-        releaseDate: "Jul 12, 2023"
-    },
-    {
-        id: 6,
-        title: "Lost in Paradise",
-        artist: "Eclipse",
-        cover: cover6,
-        album: "Dreamscapes",
-        duration: "3:50",
-        genre: "Alternative",
-        releaseDate: "Jun 18, 2023"
-    }
-];
+import MusicPlayerContext from '../../context/MusicPlayerContext';
+import { fetchSongsStart } from '../../../redux/features/Song/songSlice';
+import { useDispatch, useSelector } from 'react-redux';
 
 const tableStyle = css`
     width: 100%;
@@ -147,8 +79,19 @@ const durationContainerStyle = css`
     gap: 5px;
 `;
 
+
+
+
+
 const TrendingSongs = () => {
     const { playTrack } = useContext(MusicPlayerContext);
+    const dispatch = useDispatch();
+    const { songs, loading, error } = useSelector((state) => state.songs);
+
+    useEffect(() => {
+        dispatch(fetchSongsStart());
+    }, [dispatch]);
+
     return (
         <div>
             <h1 className='text-white text-3xl font-bold'>
@@ -164,33 +107,40 @@ const TrendingSongs = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {songs.map(song => (
-                        <tr key={song.id} css={rowStyle}>
-                            <td css={tdHasta}>#{song.id}</td>
-                            <td css={tdStyle}>
-                                <div css={coverContainerStyle} className='relative'>
-                                    <img src={song.cover} className='rounded-lg' alt={song.title} style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
-                                    <div
-                                        className='text-pink-600 absolute  p-4 bg-[#00000080] rounded-full cursor-pointer  items-center justify-center'
-                                        onClick={() => playTrack(song)}
-                                    >
-                                        <FaPlay size={20} />
+                    {songs && songs.songs.length > 0 ? (
+                        songs.songs.map((song, index) => (
+                            <tr key={song._id} css={rowStyle}>
+                                <td css={tdHasta}>#{index + 1}</td>
+                                <td css={tdStyle}>
+                                    <div css={coverContainerStyle} className='relative'>
+                                        <img src={song.coverImageUrl} className='rounded-lg' alt={song.title} style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
+                                        <div
+                                            className='text-pink-600 absolute p-4 bg-[#00000080] rounded-full cursor-pointer items-center justify-center'
+                                            onClick={() => playTrack(song)}
+                                        >
+                                            <FaPlay size={20} />
+                                        </div>
+                                        <div css={detailsContainerStyle}>
+                                            <div className='title'>{song.title}</div>
+                                            <div className='artist'>{song.artist.user.name || "Unknown Artist"}</div> {/* Adjusted artist property */}
+                                        </div>
                                     </div>
-                                    <div css={detailsContainerStyle}>
-                                        <div className='title'>{song.title}</div>
-                                        <div className='artist'>{song.artist}</div>
+                                </td>
+                                <td css={tdStyle}>{new Date(song.createdAt).toLocaleDateString()}</td>
+                                <td css={tdStyle}>
+                                    <div css={durationContainerStyle}>
+                                        <GrFavorite className='text-pink-600' />
                                     </div>
-                                </div>
-                            </td>
-                            <td css={tdStyle}>{song.releaseDate}</td>
-                            <td css={tdStyle}>
-                                <div css={durationContainerStyle}>
-                                    <GrFavorite className='text-pink-600' />
-                                    <span>{song.duration}</span>
-                                </div>
+                                </td>
+                            </tr>
+                        ))
+                    ) : (
+                        <tr>
+                            <td colSpan="4" css={tdStyle}>
+                                {loading ? "Loading..." : error ? error : "No songs available"}
                             </td>
                         </tr>
-                    ))}
+                    )}
                 </tbody>
             </table>
             <div className='w-full flex justify-center mt-5'>

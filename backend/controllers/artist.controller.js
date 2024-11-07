@@ -204,3 +204,4 @@ export const deleteAlbum = async (req, res) => {
         res.status(500).json({ success: false, message: `Album deletion failed: ${error.message}` });
     }
 };
+
