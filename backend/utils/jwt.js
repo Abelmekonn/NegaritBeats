@@ -4,11 +4,11 @@ import { redis } from '../utils/redis.js';
 dotenv.config(); // Load environment variables
 
 const accessTokenOptions = {
-    maxAge: 15 * 60 * 1000, // 15 minutes in milliseconds
+    maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days in milliseconds
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production", // Enable secure cookies in production
-};
+}; 
 
 const refreshTokenOptions = {
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds

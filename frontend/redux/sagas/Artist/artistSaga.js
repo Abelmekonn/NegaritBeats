@@ -15,10 +15,13 @@ import {
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/';
 
-// API calls
-const apiCreateArtist = (data) => axios.post(`${API_BASE_URL}artist/create-profile`, data);
-const apiFetchArtists = () => axios.get(`${API_BASE_URL}users/all-artists`);
-const apiFetchArtistById = (id) => axios.get(`${API_BASE_URL}users/artist-detail/${id}`);
+// API calls with credentials
+const apiCreateArtist = (data) =>
+    axios.post(`${API_BASE_URL}artist/create-profile`, data, { withCredentials: true });
+const apiFetchArtists = () =>
+    axios.get(`${API_BASE_URL}users/all-artists`, { withCredentials: true });
+const apiFetchArtistById = (id) =>
+    axios.get(`${API_BASE_URL}users/artist-detail/${id}`, { withCredentials: true });
 
 // Worker saga for creating an artist
 function* createArtistSaga(action) {
@@ -35,7 +38,7 @@ function* createArtistSaga(action) {
 function* fetchArtistsSaga() {
     try {
         const response = yield call(apiFetchArtists);
-        console.log(response.data)
+        console.log("Fetched artists data:", response.data); // Check structure here
         yield put(fetchArtistsSuccess(response.data));
     } catch (error) {
         const message = error.response?.data?.message || 'Failed to fetch artists';

@@ -4,7 +4,7 @@ import { createSlice } from '@reduxjs/toolkit';
 const artistSlice = createSlice({
     name: 'artist',
     initialState: {
-        artists: [],
+        artists: { data: [] },
         currentArtist: null,
         loading: false,
         error: null,

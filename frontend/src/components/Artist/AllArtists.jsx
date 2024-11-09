@@ -43,11 +43,11 @@ const AllArtists = () => {
                 {artists.data.map((artist, index) => (
                     <div key={artist._id} className={`flex items-center p-4 rounded-lg bg-gray-800`}>
                         <span className="text-white mr-4">#</span>
-                        <Link to={`/artist/${artist.id}`}>
+                        <Link to={`/artist/${artist._id}`}>
                             <img src={artist.userId.avatar.url} alt={artist.name} className="w-20 h-20 rounded-lg mr-4 cursor-pointer" />
                         </Link>
                         <div className="flex w-full justify-between">
-                            <h2 className="text-white">{artist.userId.name}<FcApproval /></h2>
+                            <h2 className="text-white flex gap-1 items-center">{artist.userId.name}{artist.isApproved && <FcApproval />} </h2>
                             <p className="text-gray-300">{artist.albums.length}</p>
                             <p className="text-gray-300">{artist.followers.length}</p>
                             <p className="text-gray-300">{artist.genre}</p>

@@ -4,97 +4,91 @@ import { FaPlayCircle, FaPauseCircle, FaStepForward, FaStepBackward } from 'reac
 import { CiShuffle, CiRepeat } from "react-icons/ci";
 import { GiSpeaker, GiSpeakerOff } from "react-icons/gi";
 
-const MusicPlayer = () => {
-    const {
-        currentTrack,
-        isPlaying,
-        playTrack,
-        pauseTrack,
-        nextTrack,
-        prevTrack,
-        repeatTrack,
-    } = useMusicPlayer(); // Access current track and controls
+// Custom debounce function
+function debounce(func, delay) {
+    let timeout;
+    return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func(...args), delay);
+    };
+}
 
-    // State for managing volume and mute
+const MusicPlayer = () => {
+    const { currentTrack, isPlaying, playTrack, pauseTrack, nextTrack, prevTrack, repeatTrack } = useMusicPlayer();
+
+    const [audio, setAudio] = useState(null);
     const [volume, setVolume] = useState(1);
     const [isMuted, setIsMuted] = useState(false);
-    
-    // State for tracking current time and duration
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
 
     useEffect(() => {
-        if (currentTrack) {
-            // Assuming `currentTrack.audio` is an HTMLAudioElement
-            const audio = currentTrack.audio;
-            
-            // const updateTime = () => setCurrentTime(audio.currentTime);
-            // const setTotalDuration = () => setDuration(audio.duration);
+        if (!audio) setAudio(new Audio());
 
-            // Add event listeners to update time and duration
-            // audio.addEventListener('timeupdate', updateTime);
-            // audio.addEventListener('loadedmetadata', setTotalDuration);
+        return () => {
+            audio && audio.pause();
+        };
+    }, []);
 
-            // Cleanup listeners
+    useEffect(() => {
+        if (audio && currentTrack) {
+            audio.src = currentTrack.songUrl; // Ensure the correct song URL
+            audio.load();
+            audio.addEventListener('timeupdate', () => setCurrentTime(audio.currentTime));
+            audio.addEventListener('loadedmetadata', () => setDuration(audio.duration));
+
+            if (isPlaying) audio.play();
             return () => {
-                // audio.removeEventListener('timeupdate', updateTime);
-                // audio.removeEventListener('loadedmetadata', setTotalDuration);
+                audio.pause();
+                audio.removeEventListener('timeupdate', () => setCurrentTime(audio.currentTime));
+                audio.removeEventListener('loadedmetadata', () => setDuration(audio.duration));
             };
         }
-    }, [currentTrack]);
+    }, [audio, currentTrack, isPlaying]);
 
-    // Handle volume change
-    const handleVolumeChange = (e) => {
-        const newVolume = e.target.value;
+    // Custom debounced volume change handler
+    const handleVolumeChange = debounce((e) => {
+        const newVolume = parseFloat(e.target.value);
         setVolume(newVolume);
-        if (newVolume === '0') {
-            setIsMuted(true);
-        } else {
-            setIsMuted(false);
-        }
-    };
+        if (audio) audio.volume = newVolume;
+        setIsMuted(newVolume === 0);
+    }, 200);
 
-    // Toggle mute/unmute
     const toggleMute = () => {
-        if (isMuted) {
-            setIsMuted(false);
-            setVolume(1);
-        } else {
-            setIsMuted(true);
-            setVolume(0);
+        if (audio) {
+            setIsMuted(!isMuted);
+            audio.volume = isMuted ? volume : 0;
         }
     };
 
-    // Convert seconds to MM:SS format
     const formatTime = (time) => {
         const minutes = Math.floor(time / 60);
         const seconds = Math.floor(time % 60);
         return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     };
 
-    // Handle track progress
-    const handleProgressChange = (e) => {
-        const newTime = e.target.value;
-        const audio = currentTrack.audio;
-        audio.currentTime = newTime;
-        setCurrentTime(newTime);
-    };
+    // Custom debounced progress change handler
+    const handleProgressChange = debounce((e) => {
+        const newTime = parseFloat(e.target.value);
+        if (audio) {
+            audio.currentTime = newTime;
+            setCurrentTime(newTime);
+        }
+    }, 200);
 
     return (
         <div className='fixed bottom-0 w-[80%] bg-gray-800 '>
             {currentTrack ? (
                 <div className='p-4 flex items-center justify-between'>
-                    {/* Track details */}
                     <div className='flex items-center '>
-                        <img src={currentTrack.cover} alt={currentTrack.title} className='w-16 h-16 object-cover rounded-md' />
+                        <img src={currentTrack.coverImageUrl} alt={currentTrack.title} className='w-16 h-16 object-cover rounded-md' />
                         <div className='ml-4'>
                             <h3 className='text-white'>{currentTrack.title}</h3>
-                            <p className='text-gray-400'>{currentTrack.artist}</p>
+                            <p className='text-gray-400'>{currentTrack.artist.user.name || "Unknown Artist"}</p>
                         </div>
                     </div>
 
-                    {/* Player controls */}
-                    <div className='w-[50%] flex flex-col justify-center item-center self-center gap-2'>
+                    <div className='w-[50%] flex flex-col justify-center items-center gap-2'>
                         <div className='flex items-center justify-center'>
                             <button className='text-white mx-2'>
                                 <CiShuffle size={24} />
@@ -103,11 +97,11 @@ const MusicPlayer = () => {
                                 <FaStepBackward size={24} />
                             </button>
                             {isPlaying ? (
-                                <button onClick={pauseTrack} className='text-white mx-2'>
+                                <button onClick={() => { audio.pause(); pauseTrack(); }} className='text-white mx-2'>
                                     <FaPauseCircle size={24} />
                                 </button>
                             ) : (
-                                <button onClick={playTrack} className='text-white mx-2'>
+                                <button onClick={() => { audio.play(); playTrack(currentTrack); }} className='text-white mx-2'>
                                     <FaPlayCircle size={24} />
                                 </button>
                             )}
@@ -119,13 +113,12 @@ const MusicPlayer = () => {
                             </button>
                         </div>
 
-                        {/* Progress bar with time */}
                         <div className='flex items-center w-full justify-center'>
                             <span className='text-gray-400 text-sm'>{formatTime(currentTime)}</span>
                             <input
                                 type="range"
                                 min="0"
-                                max={duration}
+                                max={duration || 0}
                                 value={currentTime}
                                 step="0.01"
                                 onChange={handleProgressChange}
@@ -135,21 +128,16 @@ const MusicPlayer = () => {
                         </div>
                     </div>
 
-                    {/* Volume control */}
                     <div className='flex items-center'>
                         <button onClick={toggleMute} className='text-white mx-2'>
-                            {isMuted ? (
-                                <GiSpeakerOff size={24} />
-                            ) : (
-                                <GiSpeaker size={24} />
-                            )}
+                            {isMuted ? <GiSpeakerOff size={24} /> : <GiSpeaker size={24} />}
                         </button>
                         <input
                             type="range"
                             min="0"
                             max="1"
                             step="0.01"
-                            value={volume}
+                            value={isMuted ? 0 : volume}
                             onChange={handleVolumeChange}
                             className='volume-slider mx-2'
                         />

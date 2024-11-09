@@ -91,6 +91,7 @@ const TrendingSongs = () => {
     useEffect(() => {
         dispatch(fetchSongsStart());
     }, [dispatch]);
+    console.log(songs)
 
     return (
         <div>

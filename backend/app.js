@@ -10,8 +10,8 @@ const app = express();
 
 
 // Middleware
-app.use(express.json()); // Parse JSON requests
-app.use(express.urlencoded({ extended: true })); // Parse URL-encoded requests
+app.use(express.json({ limit: '10mb' })); // Parse JSON requests
+app.use(express.urlencoded({ limit: '10mb',extended: true })); // Parse URL-encoded requests
 app.use(cookieParser()); // Parse cookies
 app.use(cors({
     origin: 'http://localhost:5173', // Client URL

@@ -1,34 +1,45 @@
-import React from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom'; // Import useNavigate
-import artist1 from '../../assets/artist/artist1.jpg';
-import artist2 from '../../assets/artist/artist2.jpg';
-import artist3 from '../../assets/artist/artist3.jpg';
-import artist4 from '../../assets/artist/artist4.jpg';
-import artist5 from '../../assets/artist/artist5.jpg';
-import artist6 from '../../assets/artist/artist6.jpg';
+import React, { useEffect } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import SingleArtistMusics from '../../components/Artist/SingleArtistMusics';
 import SingleArtistAlbum from '../../components/Artist/SingleArtistAlbum';
-import { FaArrowLeft } from 'react-icons/fa';
+import { FaArrowLeft, FaInstagram, FaTwitter, FaYoutube, FaFacebook, FaUserFriends, FaCompactDisc, FaMusic } from 'react-icons/fa';
 import SingleSongs from '../../components/Artist/SinlgeSongs';
 import ArtistPlaylist from '../../components/Artist/ArtistPlaylist';
 import ArtistToFollow from '../../components/Artist/ArtistTofollow';
 import Layout from '../../components/LayOut/Layout';
-
-const artists = [
-    { id: 1, avatar: artist1, name: 'Artist One', followers: '1.2M', totalLikes: '350K', albums: 5 },
-    { id: 2, avatar: artist2, name: 'Artist Two', followers: '900K', totalLikes: '200K', albums: 3 },
-    { id: 3, avatar: artist3, name: 'Artist Three', followers: '800K', totalLikes: '150K', albums: 2 },
-    { id: 4, avatar: artist4, name: 'Artist Four', followers: '1.5M', totalLikes: '400K', albums: 4 },
-    { id: 5, avatar: artist5, name: 'Artist Five', followers: '600K', totalLikes: '120K', albums: 6 },
-    { id: 6, avatar: artist6, name: 'Artist Six', followers: '300K', totalLikes: '80K', albums: 1 },
-];
+import { fetchArtistByIdRequest } from '../../../redux/features/artist/artistSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { FcApproval } from 'react-icons/fc';
 
 const ArtistDetail = () => {
-    const { id } = useParams(); // Get the id from the URL
-    const navigate = useNavigate(); // Create a navigate function
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
-    // Find the artist by id
-    const artist = artists.find(a => a.id === parseInt(id));
+    const { currentArtist: artist, loading, error } = useSelector((state) => state.artist);
+
+    useEffect(() => {
+        dispatch(fetchArtistByIdRequest(id));
+    }, [dispatch, id]);
+
+    console.log(artist)
+
+    if (loading) {
+        return <div className="text-white text-center pt-20">Loading artist data...</div>;
+    }
+
+    if (error) {
+        return (
+            <div className="text-white text-center pt-20">
+                <p>Failed to load artist details: {error}</p>
+                <Link to="/artists">
+                    <button className="mt-4 px-4 py-2 bg-[#4c3cff] text-white rounded-md">
+                        Go back to Artists
+                    </button>
+                </Link>
+            </div>
+        );
+    }
 
     if (!artist) {
         return (
@@ -45,32 +56,89 @@ const ArtistDetail = () => {
 
     return (
         <Layout>
-            <div className="flex flex-col pt-2 gap-12">
-                <div
-                    className="p-6 min-h-[60vh] flex justify-between rounded-2xl bg-cover bg-center px-6 relative"
-                    style={{ backgroundImage: `url(${artist.avatar})` }}
-                >
-                    <div className="absolute inset-0 bg-black opacity-40 rounded-2xl" />
-                    <div className='z-10 relative text-white'>
-                        {/* Add onClick to go back when the arrow is clicked */}
-                        <FaArrowLeft size={30} className="cursor-pointer" onClick={() => navigate(-1)} />
-                    </div>
-                    <div className="relative h-full w-full justify-between flex self-end items-center z-10">
-                        <h1 className="text-3xl font-bold text-white">{artist.name}</h1>
-                        <div className="flex justify-between gap-6">
-                            <button className="px-12 py-2 rounded-md bg-[#EE10B0] text-white font-medium">
-                                Follow
-                            </button>
-                            <button className="px-12 py-2 text-[#4c3cff] border border-[#4c3cff] hover:bg-[#4c3cff] hover:text-white rounded-md transition-all">
-                                Unfollow
-                            </button>
+            <div className="flex flex-col mt-16 gap-12">
+                <div className="artist-header flex items-center justify-between p-4 bg-[#111827] shadow-lg rounded-xl">
+                    {/* Profile Image */}
+                    <div >
+                        <div className="z-10 relative text-white">
+                            <FaArrowLeft size={30} className="cursor-pointer" onClick={() => navigate(-1)} />
+                        </div>
+                        <div className='flex items-center justify-between gap-6 w-full'>
+                            <div className="w-40 h-40 object-cover rounded-xl overflow-hidden shadow-lg">
+                                <img src={artist.artist.userId?.avatar?.url} alt="Artist Profile" className="w-full h-full object-fill" loading="lazy" />
+                            </div>
+                            {/* Artist Details */}
+                            <div className='flex flex-col gap-4'>
+                                <h2 className="text-3xl text-white font-bold">{artist.artist.userId.name}</h2>
+                                <p className="text-gray-50">{artist.artist.bio}</p>
+                                <div className="mt-1 flex gap-2 text-gray-50">
+                                    {artist.artist.genres && artist.artist.genres.length > 0 ? (
+                                        artist.artist.genres.map((genre, index) => (
+                                            <p key={index}>{genre}</p>
+                                        ))
+                                    ) : (
+                                        <p>No genres available</p>
+                                    )}
+
+                                </div>
+                                {/* Stats */}
+                                <div className="flex items-center gap-7 mt-4">
+                                    <div className='bg-[#23355d] w-24 h-24 p-3 flex flex-col items-center justify-center rounded-lg shadow-slate-900 shadow-lg'>
+                                        <FaUserFriends className="text-white text-2xl mb-1" />
+                                        <span className="text-lg text-white font-semibold">{artist.artist.followers.length}</span>
+                                        <p className="text-sm text-gray-50">Followers</p>
+                                    </div>
+                                    <div className='bg-[#23355d] w-24 h-24 p-3 flex flex-col items-center justify-center rounded-lg shadow-slate-900 shadow-lg'>
+                                        <FaMusic className="text-white text-2xl mb-1" />
+                                        <span className="text-lg text-white font-semibold">{artist.artist.singleSongs.length}</span>
+                                        <p className="text-sm text-gray-50">Songs</p>
+                                    </div>
+                                    <div className='bg-[#23355d] w-24 h-24 p-3 flex flex-col items-center justify-center rounded-lg shadow-slate-900 shadow-lg'>
+                                        <FaCompactDisc className="text-white text-2xl mb-1" />
+                                        <span className="text-lg text-white font-semibold">{artist.artist.albums.length}</span>
+                                        <p className="text-sm text-gray-50">Albums</p>
+                                    </div>
+                                </div>
+
+                                {/* Social Media Links */}
+                                <div className="flex items-center gap-4 mt-4">
+                                    {artist.artist.socialLinks?.instagram && (
+                                        <a href={artist.artist.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="text-pink-500 hover:text-pink-600">
+                                            <FaInstagram size={30} />
+                                        </a>
+                                    )}
+                                    {artist.artist.socialLinks?.twitter && (
+                                        <a href={artist.artist.socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-500">
+                                            <FaTwitter size={30} />
+                                        </a>
+                                    )}
+                                    {artist.artist.socialLinks?.facebook && (
+                                        <a href={artist.artist.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-500">
+                                            <FaFacebook size={30} />
+                                        </a>
+                                    )}
+                                    {artist.artist.socialLinks?.youtube && (
+                                        <a href={artist.artist.socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="text-red-500 hover:text-red-600">
+                                            <FaYoutube size={30} />
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </div>
+                    <div className="flex justify-between self-end gap-6">
+                        <button className="px-12 py-2 rounded-md bg-[#EE10B0] text-white font-medium">
+                            Follow
+                        </button>
+                        <button className="px-12 py-2 text-[#4c3cff] border border-[#4c3cff] hover:bg-[#4c3cff] hover:text-white rounded-md transition-all">
+                            Unfollow
+                        </button>
+                    </div>
                 </div>
-                <SingleArtistMusics />
-                <SingleArtistAlbum />
-                <SingleSongs />
-                <ArtistPlaylist />
+                <SingleArtistMusics id={id}/>
+                <SingleArtistAlbum id={id}/>
+                <SingleSongs id={id} />
+                <ArtistPlaylist id={id}/>
                 <ArtistToFollow />
             </div>
         </Layout>
