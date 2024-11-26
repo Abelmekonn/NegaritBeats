@@ -47,7 +47,11 @@ const Sidebar = () => {
             {/* Sidebar */}
             <div className={`relative sidebar-scrollbar inset-y-0 left-0 transform ${isOpen ? "translate-x-0 w-80" : "w-30 pt-14"} transition-all duration-300 ease-in-out bg-gray-900 text-white py-8 overflow-y-auto z-40`}>
                 <div className={`py-2 text-3xl text-center font-bold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent mb-5 ${!isOpen && "hidden"}`}>
-                    NegaritBeats
+                    <Link to={'/'}>
+                        <span>
+                            NegaritBeats
+                        </span>
+                    </Link>
                 </div>
 
                 {/* Menu Section */}

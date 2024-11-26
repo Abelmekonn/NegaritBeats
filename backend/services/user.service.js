@@ -82,9 +82,6 @@ export const getUserProfile = async (userId) => {
     }
 };
 
-
-
-
 // Update User Profile Service
 export const updateUserProfile = async (userId, updatedData) => {
     const user = await userModel.findById(userId);
@@ -176,7 +173,7 @@ export const fetchArtistsWithCache = async () => {
         const cachedArtists = await redis.get(ARTISTS_CACHE_KEY);
 
         if (cachedArtists) {
-            console.log("Serving artists from cache");
+            
             return JSON.parse(cachedArtists); // Return cached artists if available
         }
 
@@ -186,14 +183,13 @@ export const fetchArtistsWithCache = async () => {
         // Store the artists data in Redis and set it to expire in 1 hour (3600 seconds)
         await redis.set(ARTISTS_CACHE_KEY, JSON.stringify(artists), 'EX', 60 * 60);
 
-        console.log("Artists fetched from DB and cached in Redis");
+
 
         return artists;
     } catch (error) {
         throw new Error(`Failed to fetch artists: ${error.message}`);
     }
 };
-
 
 const ARTIST_CACHE_KEY = (artistId) => `artist_${artistId}`;
 
@@ -234,7 +230,7 @@ export const getSingleArtistWithCache = async (artistId) => {
         const cachedArtist = await redis.get(cacheKey);
 
         if (cachedArtist) {
-            console.log(`Serving artist ${artistId} from cache`);
+            
             return JSON.parse(cachedArtist); // Return cached artist if available
         }
 
@@ -243,8 +239,6 @@ export const getSingleArtistWithCache = async (artistId) => {
 
         // Cache the artist details and set an expiration time (e.g., 1 hour)
         await redis.set(cacheKey, JSON.stringify(artist), 'EX', 60 * 60);
-
-        console.log(`Artist ${artistId} fetched from DB and cached in Redis`);
 
         return artist;
     } catch (error) {

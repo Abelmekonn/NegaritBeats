@@ -51,9 +51,7 @@ function App() {
     initializeApp();
   }, [dispatch]);
 
-  if (loading) {
-    return <Loader />;
-  }
+  
 
   const protectedRoutes = [
     { path: '/', element: <Home /> },
