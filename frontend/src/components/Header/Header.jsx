@@ -22,7 +22,7 @@ const Header = () => {
   }, []);
 
   return (
-    <div className={`py-4 fixed z-50 mx-auto ml-10 bg-zinc-400 rounded-lg bg-opacity-60 transition-all duration-300 ${isScrolled ? 'bg-opacity-70' : ''}`}>
+    <div className={`py-4   mx-auto bg-zinc-400 rounded-lg bg-opacity-60 transition-all duration-300 ${isScrolled ? 'bg-opacity-70' : ''}`}>
       <div className='flex items-center gap-28 justify-between px-6 mx-auto'>
         {/* Search Input */}
         <div className='hidden md:block relative'>
