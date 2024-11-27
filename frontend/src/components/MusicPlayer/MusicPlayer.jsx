@@ -23,30 +23,77 @@ const MusicPlayer = () => {
     const [duration, setDuration] = useState(0);
 
     useEffect(() => {
-        if (!audio) setAudio(new Audio());
+        // Initialize the audio object
+        const newAudio = new Audio();
+        setAudio(newAudio);
 
         return () => {
-            audio && audio.pause();
+            newAudio.pause();
         };
     }, []);
 
     useEffect(() => {
         if (audio && currentTrack) {
-            audio.src = currentTrack.songUrl; // Ensure the correct song URL
-            audio.load();
+            // Restore playback state from localStorage
+            const savedTrack = JSON.parse(localStorage.getItem('currentTrack'));
+            const savedTime = parseFloat(localStorage.getItem('currentTime')) || 0;
+            const savedVolume = parseFloat(localStorage.getItem('volume')) || 1;
+            const savedMuted = localStorage.getItem('isMuted') === 'true';
+
+            audio.src = currentTrack.songUrl || (savedTrack ? savedTrack.songUrl : '');
+            audio.currentTime = savedTime;
+            audio.volume = savedVolume;
+            setVolume(savedVolume);
+            setIsMuted(savedMuted);
+
+            if (savedMuted) audio.volume = 0;
+
             audio.addEventListener('timeupdate', () => setCurrentTime(audio.currentTime));
             audio.addEventListener('loadedmetadata', () => setDuration(audio.duration));
 
-            if (isPlaying) audio.play();
+            if (localStorage.getItem('isPlaying') === 'true') {
+                audio.play();
+                playTrack(currentTrack);
+            }
+
             return () => {
                 audio.pause();
                 audio.removeEventListener('timeupdate', () => setCurrentTime(audio.currentTime));
                 audio.removeEventListener('loadedmetadata', () => setDuration(audio.duration));
             };
         }
-    }, [audio, currentTrack, isPlaying]);
+    }, [audio, currentTrack, playTrack]);
 
-    // Custom debounced volume change handler
+    // Save state to localStorage periodically
+    useEffect(() => {
+        if (audio) {
+            const interval = setInterval(() => {
+                localStorage.setItem('currentTime', audio.currentTime);
+                localStorage.setItem('volume', audio.volume);
+                localStorage.setItem('isMuted', isMuted);
+                localStorage.setItem('currentTrack', JSON.stringify(currentTrack));
+            }, 1000);
+
+            return () => clearInterval(interval);
+        }
+    }, [audio, currentTrack, isMuted]);
+
+    const handlePlay = () => {
+        if (audio) {
+            audio.play();
+            playTrack(currentTrack);
+            localStorage.setItem('isPlaying', true);
+        }
+    };
+
+    const handlePause = () => {
+        if (audio) {
+            audio.pause();
+            pauseTrack();
+            localStorage.setItem('isPlaying', false);
+        }
+    };
+
     const handleVolumeChange = debounce((e) => {
         const newVolume = parseFloat(e.target.value);
         setVolume(newVolume);
@@ -61,13 +108,6 @@ const MusicPlayer = () => {
         }
     };
 
-    const formatTime = (time) => {
-        const minutes = Math.floor(time / 60);
-        const seconds = Math.floor(time % 60);
-        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-    };
-
-    // Custom debounced progress change handler
     const handleProgressChange = debounce((e) => {
         const newTime = parseFloat(e.target.value);
         if (audio) {
@@ -76,15 +116,21 @@ const MusicPlayer = () => {
         }
     }, 200);
 
+    const formatTime = (time) => {
+        const minutes = Math.floor(time / 60);
+        const seconds = Math.floor(time % 60);
+        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    };
+
     return (
-        <div className='fixed bottom-0 w-[80%] bg-gray-800 '>
+        <div className='fixed bottom-0 w-[80%] bg-gray-800'>
             {currentTrack ? (
                 <div className='p-4 flex items-center justify-between'>
-                    <div className='flex items-center '>
+                    <div className='flex items-center'>
                         <img src={currentTrack.coverImageUrl} alt={currentTrack.title} className='w-16 h-16 object-cover rounded-md' />
                         <div className='ml-4'>
                             <h3 className='text-white'>{currentTrack.title}</h3>
-                            <p className='text-gray-400'>{currentTrack.artist.user.name || "Unknown Artist"}</p>
+                            <p className='text-gray-400'>{currentTrack.artist?.user?.name || "Unknown Artist"}</p>
                         </div>
                     </div>
 
@@ -97,11 +143,11 @@ const MusicPlayer = () => {
                                 <FaStepBackward size={24} />
                             </button>
                             {isPlaying ? (
-                                <button onClick={() => { audio.pause(); pauseTrack(); }} className='text-white mx-2'>
+                                <button onClick={handlePause} className='text-white mx-2'>
                                     <FaPauseCircle size={24} />
                                 </button>
                             ) : (
-                                <button onClick={() => { audio.play(); playTrack(currentTrack); }} className='text-white mx-2'>
+                                <button onClick={handlePlay} className='text-white mx-2'>
                                     <FaPlayCircle size={24} />
                                 </button>
                             )}
@@ -135,10 +181,15 @@ const MusicPlayer = () => {
                         <input
                             type="range"
                             min="0"
-                            max="1"
-                            step="0.01"
-                            value={isMuted ? 0 : volume}
-                            onChange={handleVolumeChange}
+                            max="100"
+                            step="5"
+                            value={isMuted ? 0 : volume * 100} 
+                            onChange={(e) => {
+                                const newVolume = parseInt(e.target.value, 10) / 100; 
+                                setVolume(newVolume);
+                                if (audio) audio.volume = newVolume; 
+                                setIsMuted(newVolume === 0);
+                            }}
                             className='volume-slider mx-2'
                         />
                     </div>

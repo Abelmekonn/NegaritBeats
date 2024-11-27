@@ -81,7 +81,7 @@ const Sidebar = () => {
             {/* Toggle Button - Always Visible */}
             <div className={`absolute ${isOpen ? "left-52 top-4" : "w-20 bg-gray-900 flex justify-center top-0 left-0 py-2"} z-50`}>
                 <button onClick={toggleSidebar}>
-                    {isOpen ? <GrClose size={30} className="text-white" /> : <HiOutlineMenuAlt3 size={30} className="text-white" />}
+                    {isOpen ? <GrClose size={20} className="text-white" /> : <HiOutlineMenuAlt3 size={20} className="text-white" />}
                 </button>
             </div>
 
