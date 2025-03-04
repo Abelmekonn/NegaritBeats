@@ -35,14 +35,14 @@ const Header = () => {
         </div>
 
         {/* Links */}
-        <div className='flex gap-5'>
-          <Link to='/about' className='text-white text-xl font-medium text-center'>
+        <div className='flex gap-5 '>
+          <Link to='/about' className='text-white md:text-xl font-medium text-center'>
             About Us
           </Link>
-          <Link to='/contact' className='text-white text-xl font-medium text-center'>
+          <Link to='/contact' className='text-white md:text-xl font-medium text-center'>
             Contact
           </Link>
-          <Link to='/premium' className='text-white text-xl font-medium text-center'>
+          <Link to='/premium' className='text-white md:text-xl font-medium text-center'>
             Premium
           </Link>
         </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { HiOutlineHome, HiOutlineMenuAlt3 } from 'react-icons/hi';
-import { IoCompassOutline, IoDiscOutline,  IoSettingsOutline } from 'react-icons/io5';
+import { IoCompassOutline, IoDiscOutline, IoSettingsOutline } from 'react-icons/io5';
 import { CiUser } from 'react-icons/ci';
 import { MdPerson, MdReplay, MdLibraryAdd } from "react-icons/md";
 import { GrClose, GrFavorite } from "react-icons/gr";
@@ -78,15 +78,14 @@ const Sidebar = () => {
 
     return (
         <>
-            {/* Toggle Button - Always Visible */}
-            <div className={`absolute ${isOpen ? "left-52 top-4" : "w-20 bg-gray-900 flex justify-center top-0 left-0 py-2"} z-50`}>
-                <button onClick={toggleSidebar}>
-                    {isOpen ? <GrClose size={20} className="text-white" /> : <HiOutlineMenuAlt3 size={20} className="text-white" />}
-                </button>
-            </div>
-
             {/* Sidebar */}
-            <div className={`sm:absolute md:relative sidebar-scrollbar inset-y-0 left-0 transform ${isOpen ? "translate-x-0 w-80" : "w-30 pt-14"} transition-all duration-300 ease-in-out bg-gray-900 text-white py-8 overflow-y-auto z-40`}>
+            <div className={`hidden md:relative sidebar-scrollbar inset-y-0 left-0 transform ${isOpen ? "translate-x-0 w-60 md:w-80" : "w-20 md:w-30 pt-14"} transition-all duration-300 ease-in-out bg-gray-900 text-white py-8 overflow-y-auto z-40`}>
+                {/* Toggle Button - Always Visible */}
+                <div className={`absolute ${isOpen ? "left-52 top-4" : "md:w-16 bg-gray-900 flex justify-center top-0 left-0 py-2"} z-50`}>
+                    <button onClick={toggleSidebar}>
+                        {isOpen ? <GrClose size={20} className="text-white" /> : <HiOutlineMenuAlt3 size={20} className="text-white" />}
+                    </button>
+                </div>
                 <div className={`py-2 text-3xl text-center font-bold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent mb-5 ${!isOpen && "hidden"}`}>
                     NegaritBeats
                 </div>

@@ -1,17 +1,24 @@
 import { Redis } from "ioredis";
-import dotenv from "dotenv"; // Import dotenv for environment variables
+import dotenv from "dotenv";
 
-dotenv.config(); // Load environment variables
+dotenv.config();
 
-// Create a new Redis client instance
 const redisClient = () => {
-    // Check if REDIS_URL is provided
-    if (process.env.REDIS_URL) {
-        console.log("Connected to Redis...");
-        return new Redis(process.env.REDIS_URL); // Connect to Redis with the provided URL
+    if (!process.env.REDIS_URL) {
+        throw new Error("Redis connection failed: REDIS_URL is not set");
     }
-    throw new Error("Redis connection failed: REDIS_URL is not set");
+
+    const client = new Redis(process.env.REDIS_URL);
+
+    client.on("error", (err) => {
+        console.error("Redis error:", err);
+    });
+
+    client.on("connect", () => {
+        console.log("Connected to Redis...");
+    });
+
+    return client;
 };
 
-// Export the Redis client instance
-export const redis = redisClient(); // Initialize the Redis client
+export const redis = redisClient();

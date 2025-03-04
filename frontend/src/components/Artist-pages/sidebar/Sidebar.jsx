@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import { MdPerson, MdLibraryMusic, MdAlbum, MdOutlineDashboard } from 'react-icons/md';
 import { IoIosLogOut, IoIosCreate, IoMdClose, IoIosAlbums } from 'react-icons/io';
 import LogoutModal from '../../Common/Logout';
-import { Link } from 'react-router-dom';
+import { Link, useNavigation } from 'react-router-dom';
 import { HiOutlineMenuAlt3 } from 'react-icons/hi';
 
 const Sidebar = () => {
@@ -13,6 +13,7 @@ const Sidebar = () => {
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
     const dispatch = useDispatch();
     const user = useSelector((state) => state.user.user);
+    const navigate = useNavigation()
 
     const toggleSidebar = () => {
         setIsOpen(!isOpen);
@@ -22,7 +23,7 @@ const Sidebar = () => {
         dispatch(logoutUserRequest()); // Dispatch logout action
         setIsLogoutModalOpen(false); // Close the modal
         toast.success('Logout successful!'); // Show success message
-        window.location.reload(); // Reload the page to reflect logout
+        navigate('/login')
     };
 
     const artistItems = [

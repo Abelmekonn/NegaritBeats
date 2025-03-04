@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React from 'react'
 import Sidebar from '../sidebar/Sidebar';
 import MusicPlayer from '../../MusicPlayer/MusicPlayer';
